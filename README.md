@@ -3,13 +3,11 @@ Xajax integration for the Laravel framework
 
 #### Installation
 
-Installer le package à l'aide de Composer.
+Install the package with Composer CLI or composer.json.
 
 ```
 composer require lagdo/xajax
 ```
-
-Ou bien ajouter cette ligne dans le fichier composer.json.
 
 ```
 "lagdo/lajax": "dev-master"
@@ -17,17 +15,17 @@ Ou bien ajouter cette ligne dans le fichier composer.json.
 
 #### Usage
 
-##### Un exemple simple
+##### A simple example
 
-Placer dans le répertoire app/ajax/controllers/ les classes à exporter avec Xajax. Elles héritent de la classe Lagdo\Lajax\Xajax\Controller.
-En voici un exemple.
+Add the classes to be exported in JS code in app/ajax/controllers/. They inherit from the Lagdo\Lajax\Xajax\Controller class.
+Here's an example.
 
 ```
 class Demo extends Lagdo\Lajax\Xajax\Controller
 {
     public function __construct()
     {
-        // Appel du constructeur du parent
+        //Call parent contructor
         parent::__construct();
     }
 
@@ -39,7 +37,7 @@ class Demo extends Lagdo\Lajax\Xajax\Controller
 }
 ```
 
-Dans un contrôleur, charger les classes dans la fonction qui affiche la page, et ajouter une fonction pour traiter la requête Ajax.
+In the Laravel controller, register the exported classes, and add a function to process Ajax requests.
 
 ```
 class HomeController extends Controller
@@ -60,7 +58,7 @@ class HomeController extends Controller
 }
 ```
 
-Définir les routes.
+Define the routes.
 
 ```
 Route::get('/', array(
@@ -74,29 +72,41 @@ Route::post('xajax', array(
 ));
 ```
 
-Enfin, inclure le code Javascript dans le code HTML de la page. Cette fonctions gènère le code et les inclusions de fichiers Javascript nécessaires à la librairie.
+Include the Javascript in the HTML code. This function generate Javascript code for Xajax functions and file inclusion.
 
 ```
 {{ Lajax::javascript() }}
 ```
 
-La classe PHP est exportée dans le code Javascript de la page, et on peut par exemple écrire le code suivant.
+The PHP class is then exported to Javascript, and its methods can be called directly from the page.
 
 ```
-XajaxDemo.multiply(x, y);
+<input type="text" name="x" id="x" value="2" size="3" /> * 
+<input type="text" name="y" id="y" value="3" size="3" /> = 
+<input type="text" name="z" id="z" value="" size="3" /> 
+<input type="button" value="Calculate" onclick="XajaxDemo.multiply($('#x').val(), $('#y').val());return false;" />
 ```
 
-Pour plus d'info sur la librairie Xajax, consulter son site web http://www.xajax-project.org ou sa page Github https://github.com/Xajax/Xajax
+For more info about Xajax library, visit the website at http://www.xajax-project.org or Github https://github.com/Xajax/Xajax.
 
 #### Configuration
 
+TBD
 
 #### Advanced usage
 
 ##### Controller initialisation
 
+TBD
+
 ##### Pre- and post-request processing
+
+TBD
 
 ##### Exception handling
 
+TBD
+
 ##### Calling a controller from another one
+
+TBD
