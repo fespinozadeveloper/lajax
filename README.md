@@ -1,13 +1,26 @@
-# lajax
+## lajax
 Xajax integration for the Laravel framework
 
-## Installation
+#### Installation
 
-## Usage
+Installer le package à l'aide de Composer.
 
-### Un exemple simple
+```
+composer require lagdo/xajax
+```
 
-Placer dans le répertoire app/ajax/controllers/ les classes à exporter en Javascript dans la page HTML. Elles héritent de la classe Lagdo\Lajax\Xajax\Controller.
+Ou bien ajouter cette ligne dans le fichier composer.json.
+
+```
+"lagdo/lajax": "dev-master"
+```
+
+#### Usage
+
+##### Un exemple simple
+
+Placer dans le répertoire app/ajax/controllers/ les classes à exporter avec Xajax. Elles héritent de la classe Lagdo\Lajax\Xajax\Controller.
+En voici un exemple.
 
 ```
 class Demo extends Lagdo\Lajax\Xajax\Controller
@@ -26,7 +39,7 @@ class Demo extends Lagdo\Lajax\Xajax\Controller
 }
 ```
 
-Charger les classes dans la fonction d'affichage de la page, et ajouter une focntion pour traiter la requête Ajax.
+Dans un contrôleur, charger les classes dans la fonction qui affiche la page, et ajouter une fonction pour traiter la requête Ajax.
 
 ```
 class HomeController extends Controller
@@ -61,29 +74,29 @@ Route::post('xajax', array(
 ));
 ```
 
-Enfin, inclure le code Javascript dans la page.
+Enfin, inclure le code Javascript dans le code HTML de la page. Cette fonctions gènère le code et les inclusions de fichiers Javascript nécessaires à la librairie.
 
 ```
 {{ Lajax::javascript() }}
 ```
 
-La classe PHP est exportée dans le code Javascript de la page, et on peut l'appeler avec le code suivant.
+La classe PHP est exportée dans le code Javascript de la page, et on peut par exemple écrire le code suivant.
 
 ```
 XajaxDemo.multiply(x, y);
 ```
 
-Pour plus d'info sur la librairie Xajax, consulter son site web: http://www.xajax-project.org.
+Pour plus d'info sur la librairie Xajax, consulter son site web http://www.xajax-project.org ou sa page Github https://github.com/Xajax/Xajax
 
-## Configuration
+#### Configuration
 
 
-## Advanced usage
+#### Advanced usage
 
-### Controller initialisation
+##### Controller initialisation
 
-### Pre- and post-request processing
+##### Pre- and post-request processing
 
-### Exception handling
+##### Exception handling
 
-### Calling a controller in another one
+##### Calling a controller from another one
