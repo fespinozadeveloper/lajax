@@ -3,6 +3,9 @@ Xajax integration for the Laravel framework.
 
 The Xajax library makes it possible to export PHP classes to Javascript code, so they can be called directly from client side.
 
+*** Warning ***
+*** This package is still in early development stage ***
+
 #### Installation
 
 Install the package with Composer CLI or composer.json.
@@ -25,7 +28,7 @@ They should inherit from the Lagdo\Lajax\Controller class.
 Here's an example.
 
 ```
-class Demo extends Lagdo\Lajax\Xajax\Controller
+class Demo extends Lagdo\Lajax\Controller
 {
     public function __construct()
     {
