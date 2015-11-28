@@ -23,7 +23,7 @@ class Lajax
 	{
 		$this->xajax = new \xajax($requestRoute);
 		// $this->response = \xajax::getGlobalResponse();
-		$this->response = new Xajax\Response();
+		$this->response = new Response();
 		$this->controllerDir = $controllerDir;
 	}
 

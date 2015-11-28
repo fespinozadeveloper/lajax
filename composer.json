@@ -16,8 +16,8 @@
         "illuminate/support": "4.2.*"
     },
     "autoload": {
-        "psr-0": {
-            "Lagdo\\Lajax\\": "src/"
+        "psr-4": {
+            "Lagdo\\Lajax\\": "src/Lagdo/Lajax/"
         }
     }
 }

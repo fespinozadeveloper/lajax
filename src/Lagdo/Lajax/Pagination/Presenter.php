@@ -1,11 +1,8 @@
 <?php namespace Lagdo\Lajax\Pagination;
 
-use Illuminate\Pagination\Presenter as LaravelPresenter;
-
-class Presenter extends LaravelPresenter
+class Presenter extends \Illuminate\Pagination\Presenter
 {
-	protected $handler = 'page';
-	protected $params;
+	protected $xajaxCall;
 
 	/**
 	 * Create a new Presenter instance.
@@ -13,11 +10,41 @@ class Presenter extends LaravelPresenter
 	 * @param  \Illuminate\Pagination\Paginator  $paginator
 	 * @return void
 	 */
-	public function __construct(\Illuminate\Pagination\Paginator $paginator, $handler, array $params = array())
+	public function __construct(\Illuminate\Pagination\Paginator $paginator, $xajaxClass, $xajaxMethod, $xajaxParams = false)
 	{
 		parent::__construct($paginator);
-		$this->handler = $handler;
-		$this->params = $params;
+		// Params other than the page number
+		$paramsBefore = '';
+		$paramsAfter = '';
+		if(is_array($xajaxParams))
+		{
+			// Params before the page number
+			if(array_key_exists('b', $xajaxParams) && is_array($xajaxParams['b']))
+			{
+				foreach($xajaxParams['b'] as $param)
+				{
+					if(is_string($param))
+						$paramsBefore .= "'" . addslashes($param) . "',";
+					elseif(is_numeric($param))
+						$paramsBefore .= $param . ",";
+				}
+			}
+			// Add params after the page number
+			if(array_key_exists('a', $xajaxParams) && is_array($xajaxParams['a']))
+			{
+				foreach($xajaxParams['a'] as $param)
+				{
+					if(is_string($param))
+						$paramsAfter .= ",'" . addslashes($param) . "'";
+					elseif(is_numeric($param))
+						$paramsAfter .= "," . $param;
+				}
+			}
+		}
+		// The Xajax call to a page, with the page number and text as placeholders
+		$xajaxPrefix = \Config::get('lajax::lib.wrapperPrefix', 'Xajax');
+		$this->xajaxCall = '<li><a href="javascript:void(0)" onclick="' . $xajaxPrefix . $xajaxClass . '.' .
+			$xajaxMethod . '(' . $paramsBefore . '{number}' . $paramsAfter . ');return false;">{page}</a></li>';
 	}
 
 	/**
@@ -30,14 +57,12 @@ class Presenter extends LaravelPresenter
 	public function getPageLinkWrapper($url, $page, $rel = null)
 	{
 		if($page == '&laquo;') // Prev page
-			$pageNum = $this->currentPage - 1;
+			$number = $this->currentPage - 1;
 		else if($page == '&raquo;') // Next page
-			$pageNum = $this->currentPage + 1;
+			$number = $this->currentPage + 1;
 		else
-			$pageNum = $page;
-		$params = array_merge($this->params, array($pageNum));
-		return '<li><a href="javascript:void(0)" onclick="' . $this->handler . '(' .
-			implode(',', $params) . ');return false;">' . $page . '</a></li>';
+			$number = $page;
+		return str_replace(array('{number}', '{page}'), array($number, $page), $this->xajaxCall);
 	}
 
 	/**
