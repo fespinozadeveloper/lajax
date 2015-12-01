@@ -4,6 +4,8 @@ class Controller
 {
 	// Application data
 	protected $response = null;
+	// Javascripts requests to this class
+	protected $requests = array();
 
 	public function __construct()
 	{}
@@ -19,6 +21,11 @@ class Controller
 	public function setResponse($response)
 	{
 		$this->response = $response;
+	}
+
+	public function setRequests($requests)
+	{
+		$this->requests = $requests;
 	}
 
 	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $xajaxMethod, $xajaxParams = false)

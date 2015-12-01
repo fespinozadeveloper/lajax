@@ -9,8 +9,9 @@ class Lajax
 	protected $cbEventAfter = null;
 	protected $cbEventInit = null;
 
-	// Array of registered Xajax controllers
+	// Array of registered Xajax controllers, and their requests
 	protected $controllers = array();
+	protected $requests = array();
 	// Directory where class files are found
 	protected $controllerDir;
 	// Extension of controllers files
@@ -84,39 +85,59 @@ class Lajax
 		$controller->__init();
 	}
 
-	public function registerClass($className)
+	public function registerClass($classname)
 	{
-		require_once($this->controllerDir . '/' . $className . $this->extension);
-		// Create en instance of controller
-		$controller = new $className;
+		$classname = str_replace(array('\\', '/'), array('.', '.'), $classname);
+		// Remove trailing dots
+		$classname = trim($classname, '.');
+		$classpath = '';
+		$classfile = '/' . $classname . $this->extension;
+		if(($lastDotPos = strrpos($classname, '.')) !== false)
+		{
+			$classpath = substr($classname, 0, $lastDotPos);
+			$classname = substr($classname, $lastDotPos + 1);
+			$classfile = '/' . str_replace('.', '/', $classpath) . '/' . $classname . $this->extension;
+		}
+		require_once($this->controllerDir . $classfile);
+		// Create an instance of the controller
+		$controller = new $classname;
 		// Add in controllers array
-		$this->controllers[$className] = $controller;
+		$this->controllers[$classname] = $controller;
 		// Enregistrer le controleur dans la librairie Xajax
-		$this->xajax->register(XAJAX_CALLABLE_OBJECT, $controller);
+		$config = array();
+		if(($classpath))
+		{
+			$config['*'] = array('classpath' => $classpath);
+		}
+		$requests = $this->xajax->register(XAJAX_CALLABLE_OBJECT, $controller, $config);
+		$controller->setRequests($requests);
+		return $controller;
 	}
 
-	public function registerClasses(array $classNames)
+	public function registerClasses(array $classnames)
 	{
-		foreach($classNames as $className)
+		foreach($classnames as $classname)
 		{
-			$this->registerClass($className);
+			$this->registerClass($classname);
 		}
 	}
 
 	public function register()
 	{
 		$dir = $this->controllerDir;
-		foreach (\File::files($dir) as $file)
+		foreach (\File::allFiles($dir) as $file)
 		{
 			// Vérifier l'extension du fichier
-			if(substr($file, -strlen($this->extension)) == $this->extension)
+			if($file->isFile() && $this->extension == '.' . $file->getExtension())
 			{
 				// Retrouver le nom de la classe
-				$className = basename($file, $this->extension);
-				if(($className))
-		        {
-		        	$this->registerClass($className);
-		        }
+				$classname = $file->getBasename($this->extension);
+				$filepath = $file->getPath();
+				if($filepath != $this->controllerDir)
+				{
+					$classname = substr($filepath, strlen($this->controllerDir) + 1) . '/' . $classname;
+				}
+				$this->registerClass($classname);
 			}
 		}
 	}
@@ -126,8 +147,13 @@ class Lajax
 		// Include called class
 		$class = $_POST['xjxcls'];
 		$method = $_POST['xjxmthd'];
+		$xajaxPluginManager = \xajaxPluginManager::getInstance();
+		$xajaxCallableObjectPlugin = $xajaxPluginManager->getRequestPlugin('xajaxCallableObjectPlugin');
+
 		// Todo : check $class ans $method validity and return in case of error
 		$controller = $this->getController($class);
+		$xajaxCallableObjectPlugin->setRequestedClass(get_class($controller));
+
 		if(($this->cbEventBefore))
 		{
 			$cb = $this->cbEventBefore;
@@ -151,13 +177,9 @@ class Lajax
 		return $this->response;
 	}
 
-	public function getController($className)
+	public function getController($classname)
 	{
-		if(!array_key_exists($className, $this->controllers))
-		{
-			$this->registerClass($className);
-		}
-		$controller = $this->controllers[$className];
+		$controller = $this->registerClass($classname);
 		$this->initController($controller);
 		return $controller;
 	}
