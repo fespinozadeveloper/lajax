@@ -68,24 +68,7 @@ class Lajax
 		$this->cbEventAfter = $closure;
 	}
 
-	public function initController($controller)
-	{
-		// Si le controller a déjà été initialisé, ne rien faire
-		if(($controller->response()))
-		{
-			return;
-		}
-		// Placer les données dans le controleur
-		$controller->setResponse($this->response);
-		if(($this->cbEventInit))
-		{
-			$cb = $this->cbEventInit;
-			$cb($controller);
-		}
-		$controller->__init();
-	}
-
-	public function registerClass($classname)
+	protected function registerClass($classname)
 	{
 		$classname = str_replace(array('\\', '/'), array('.', '.'), $classname);
 		// Remove trailing dots
@@ -98,24 +81,32 @@ class Lajax
 			$classname = substr($classname, $lastDotPos + 1);
 			$classfile = '/' . str_replace('.', '/', $classpath) . '/' . $classname . $this->extension;
 		}
-		require_once($this->controllerDir . $classfile);
+		// Return the controller if it already exists
+		if(array_key_exists($classname, $this->controllers))
+		{
+			return $this->controllers[$classname];
+		}
+
 		// Create an instance of the controller
+		require_once($this->controllerDir . $classfile);
 		$controller = new $classname;
-		// Add in controllers array
+		// Add in the controllers array
 		$this->controllers[$classname] = $controller;
-		// Enregistrer le controleur dans la librairie Xajax
+		// Register as a callable object in the Xajax library
 		$config = array();
 		if(($classpath))
 		{
 			$config['*'] = array('classpath' => $classpath);
 		}
 		$requests = $this->xajax->register(XAJAX_CALLABLE_OBJECT, $controller, $config);
+
 		$controller->setRequests($requests);
 		return $controller;
 	}
 
 	public function registerClasses(array $classnames)
 	{
+		array_unique($classnames);
 		foreach($classnames as $classname)
 		{
 			$this->registerClass($classname);
@@ -142,27 +133,49 @@ class Lajax
 		}
 	}
 
+	protected function initController($controller)
+	{
+		// Si le controller a déjà été initialisé, ne rien faire
+		if(($controller->response()))
+		{
+			return;
+		}
+		// Placer les données dans le controleur
+		$controller->setResponse($this->response);
+		if(($this->cbEventInit))
+		{
+			$cb = $this->cbEventInit;
+			$cb($controller);
+		}
+		$controller->__init();
+	}
+
+	public function getController($classname)
+	{
+		$controller = $this->registerClass($classname);
+		$this->initController($controller);
+		return $controller;
+	}
+
 	public function eventBefore(&$bEndRequest)
 	{
 		// Include called class
 		$class = $_POST['xjxcls'];
 		$method = $_POST['xjxmthd'];
+		// Todo : check $class ans $method validity and exit in case of error
+		$controller = $this->getController($class);
+
+		// Set the actual controller class name in the Xajax request plugin,
+		// so the Xajax library can invoke the right callable object. 
 		$xajaxPluginManager = \xajaxPluginManager::getInstance();
 		$xajaxCallableObjectPlugin = $xajaxPluginManager->getRequestPlugin('xajaxCallableObjectPlugin');
-
-		// Todo : check $class ans $method validity and return in case of error
-		$controller = $this->getController($class);
 		$xajaxCallableObjectPlugin->setRequestedClass(get_class($controller));
 
+		// Call the user defined callback
 		if(($this->cbEventBefore))
 		{
 			$cb = $this->cbEventBefore;
 			$cb($class, $method, $bEndRequest);
-		}
-		// Call __init method
-		if(!$bEndRequest)
-		{
-			$this->initController($controller);
 		}
 		return $this->response;
 	}
@@ -175,13 +188,6 @@ class Lajax
 			$cb();
 		}
 		return $this->response;
-	}
-
-	public function getController($classname)
-	{
-		$controller = $this->registerClass($classname);
-		$this->initController($controller);
-		return $controller;
 	}
 
 	public function processRequest()

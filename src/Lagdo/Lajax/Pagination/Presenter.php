@@ -2,7 +2,7 @@
 
 class Presenter extends \Illuminate\Pagination\Presenter
 {
-	protected $xajaxCall;
+	protected $xajaxCall = '';
 
 	/**
 	 * Create a new Presenter instance.
@@ -10,41 +10,11 @@ class Presenter extends \Illuminate\Pagination\Presenter
 	 * @param  \Illuminate\Pagination\Paginator  $paginator
 	 * @return void
 	 */
-	public function __construct(\Illuminate\Pagination\Paginator $paginator, $xajaxClass, $xajaxMethod, $xajaxParams = false)
+	public function __construct(\Illuminate\Pagination\Paginator $paginator, $xajaxCall, $xajaxPage)
 	{
 		parent::__construct($paginator);
-		// Params other than the page number
-		$paramsBefore = '';
-		$paramsAfter = '';
-		if(is_array($xajaxParams))
-		{
-			// Params before the page number
-			if(array_key_exists('b', $xajaxParams) && is_array($xajaxParams['b']))
-			{
-				foreach($xajaxParams['b'] as $param)
-				{
-					if(is_string($param))
-						$paramsBefore .= "'" . addslashes($param) . "',";
-					elseif(is_numeric($param))
-						$paramsBefore .= $param . ",";
-				}
-			}
-			// Add params after the page number
-			if(array_key_exists('a', $xajaxParams) && is_array($xajaxParams['a']))
-			{
-				foreach($xajaxParams['a'] as $param)
-				{
-					if(is_string($param))
-						$paramsAfter .= ",'" . addslashes($param) . "'";
-					elseif(is_numeric($param))
-						$paramsAfter .= "," . $param;
-				}
-			}
-		}
-		// The Xajax call to a page, with the page number and text as placeholders
-		$xajaxPrefix = \Config::get('lajax::lib.wrapperPrefix', 'Xajax');
-		$this->xajaxCall = '<li><a href="javascript:void(0)" onclick="' . $xajaxPrefix . $xajaxClass . '.' .
-			$xajaxMethod . '(' . $paramsBefore . '{number}' . $paramsAfter . ');return false;">{page}</a></li>';
+		$this->xajaxCall = '<li><a href="javascript:void(0)" onclick="' . addslashes($xajaxCall) .
+			';return false;">' . $xajaxPage . '</a></li>';
 	}
 
 	/**
