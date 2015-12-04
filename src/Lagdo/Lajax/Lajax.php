@@ -68,7 +68,7 @@ class Lajax
 		$this->cbEventAfter = $closure;
 	}
 
-	protected function registerClass($classname)
+	public function registerClass($classname)
 	{
 		$classname = str_replace(array('\\', '/'), array('.', '.'), $classname);
 		// Remove trailing dots

@@ -2,7 +2,7 @@
 
 class Presenter extends \Illuminate\Pagination\Presenter
 {
-	protected $xajaxCall = '';
+	protected $xajaxRequest = '';
 
 	/**
 	 * Create a new Presenter instance.
@@ -10,11 +10,10 @@ class Presenter extends \Illuminate\Pagination\Presenter
 	 * @param  \Illuminate\Pagination\Paginator  $paginator
 	 * @return void
 	 */
-	public function __construct(\Illuminate\Pagination\Paginator $paginator, $xajaxCall, $xajaxPage)
+	public function __construct(\Illuminate\Pagination\Paginator $paginator, $xajaxRequest)
 	{
 		parent::__construct($paginator);
-		$this->xajaxCall = '<li><a href="javascript:void(0)" onclick="' . addslashes($xajaxCall) .
-			';return false;">' . $xajaxPage . '</a></li>';
+		$this->xajaxRequest = $xajaxRequest;
 	}
 
 	/**
@@ -32,7 +31,8 @@ class Presenter extends \Illuminate\Pagination\Presenter
 			$number = $this->currentPage + 1;
 		else
 			$number = $page;
-		return str_replace(array('{number}', '{page}'), array($number, $page), $this->xajaxCall);
+		return '<li><a href="javascript:;" onclick="' . $this->xajaxRequest->getScript($number) .
+			';return false;">' . $page . '</a></li>';
 	}
 
 	/**
