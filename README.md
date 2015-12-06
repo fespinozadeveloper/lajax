@@ -22,8 +22,8 @@ composer require lagdo/xajax
 Publish the package config and assets.
 
 ```
-php artisan lagdo:config
-php artisan lagdo:assets
+php artisan lajax:config
+php artisan lajax:assets
 ```
 The published assets are actually those of the lagdo/xajax package.
 
