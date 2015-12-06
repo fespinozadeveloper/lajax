@@ -32,7 +32,7 @@ The published assets are actually those of the lagdo/xajax package.
 ##### A simple example
 
 Add the classes to be exported in Javascript code in app/ajax/controllers/.
-They should inherit from the Lagdo\Lajax\Controller class.
+They inherit from the Lagdo\Lajax\Controller class.
 
 Here's an example.
 
