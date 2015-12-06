@@ -10,6 +10,7 @@ return array(
 		'wrapperPrefix' => 'Xajax',
 		'characterEncoding' => 'UTF-8',
 		'deferScriptGeneration' => true,
+		'deferDirectory' => 'deferred',
 		// 'javascript_URI' => '',
 		// 'javascript_Dir' => '',
 		'errorHandler' => false,

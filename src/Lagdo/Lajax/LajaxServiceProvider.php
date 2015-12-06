@@ -28,7 +28,7 @@ class LajaxServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		//
+		// Register the Lajax singleton
 		$this->app['lajax'] = $this->app->share(function($app)
 		{
 			// Xajax application config
@@ -50,12 +50,13 @@ class LajaxServiceProvider extends ServiceProvider
 			}
 
 			// Dir and URL of Javascript files
-			$defaultJsDir = public_path('/packages/lagdo/lajax/js');
-			$defaultJsUrl = asset('/packages/lagdo/lajax/js');
+			$defaultJsDir = public_path('/packages/lagdo/xajax/js');
+			$defaultJsUrl = asset('/packages/lagdo/xajax/js');
 			// Xajax library config
 			$xajax->configure('wrapperPrefix', \Config::get('lajax::lib.wrapperPrefix', 'Xajax'));
 			$xajax->configure('characterEncoding', \Config::get('lajax::lib.characterEncoding', 'UTF-8'));
 			$xajax->configure('deferScriptGeneration', \Config::get('lajax::lib.deferScriptGeneration', false));
+			$xajax->configure('deferDirectory', \Config::get('lajax::lib.deferDirectory', 'deferred'));
 			$xajax->configure('javascript URI', \Config::get('lajax::lib.javascript_URI', $defaultJsUrl));
 			$xajax->configure('javascript Dir', \Config::get('lajax::lib.javascript_Dir', $defaultJsDir));
 			$xajax->configure('errorHandler', \Config::get('lajax::lib.errorHandler', false));
@@ -63,6 +64,20 @@ class LajaxServiceProvider extends ServiceProvider
 
 			return $xajax;
 		});
+
+		// Register the Lajax commands
+		$this->app['lajax::commands.config'] = $this->app->share(function($app)
+		{
+			return new Console\PublishConfig;
+		});
+		$this->app['lajax::commands.assets'] = $this->app->share(function($app)
+		{
+			return new Console\PublishAssets;
+		});
+		$this->commands(
+			'lajax::commands.config',
+			'lajax::commands.assets'
+		);
 	}
 
 	/**
