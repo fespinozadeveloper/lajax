@@ -75,6 +75,8 @@ class Controller
 
 	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $xajaxMethod, array $xajaxParameters = array())
 	{
+		// The Xajax library turns the method names into lower case chars.
+		$xajaxMethod = strtolower($xajaxMethod);
 		// Check if the xajax method exists
 		if(!array_key_exists($xajaxMethod, $this->requests))
 		{
