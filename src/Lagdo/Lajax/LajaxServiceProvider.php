@@ -19,6 +19,13 @@ class LajaxServiceProvider extends ServiceProvider
 	public function boot()
 	{
 		$this->package('lagdo/lajax');
+	
+		// Register the controllers namespace and dir for autoloading
+		if(($namespace = trim(\Config::get('lajax::app.namespace'), '\\')))
+		{
+			$loader = require base_path() . '/vendor/autoload.php';
+			$loader->setPsr4($namespace . '\\', \Config::get('lajax::app.controllers', app_path() . '/ajax/controllers'));
+		}
 	}
 
 	/**

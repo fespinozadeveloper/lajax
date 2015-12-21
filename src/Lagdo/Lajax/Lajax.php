@@ -74,21 +74,29 @@ class Lajax
 		// Remove trailing dots
 		$classname = trim($classname, '.');
 		$classpath = '';
-		$classfile = '/' . $classname . $this->extension;
+		$classfile = $classname;
 		if(($lastDotPos = strrpos($classname, '.')) !== false)
 		{
 			$classpath = substr($classname, 0, $lastDotPos);
 			$classname = substr($classname, $lastDotPos + 1);
-			$classfile = '/' . str_replace('.', '/', $classpath) . '/' . $classname . $this->extension;
+			$classfile = str_replace('.', '/', $classpath) . '/' . $classname;
 		}
+		// Set the namespace, if defined
+		if(($namespace = trim(\Config::get('lajax::app.namespace'), '\\')))
+		{
+			$classname = '\\' . $namespace . '\\' . str_replace('/', '\\', $classfile);
+		}
+		else
+		{
+			require_once($this->controllerDir . '/' . $classfile . $this->extension);
+		}
+
 		// Return the controller if it already exists
 		if(array_key_exists($classname, $this->controllers))
 		{
 			return $this->controllers[$classname];
 		}
-
 		// Create an instance of the controller
-		require_once($this->controllerDir . $classfile);
 		$controller = new $classname;
 		// Add in the controllers array
 		$this->controllers[$classname] = $controller;
@@ -98,9 +106,8 @@ class Lajax
 		{
 			$config['*'] = array('classpath' => $classpath);
 		}
-		$requests = $this->xajax->register(XAJAX_CALLABLE_OBJECT, $controller, $config);
 
-		$controller->setRequests($requests);
+		$controller->requests = $this->xajax->register(XAJAX_CALLABLE_OBJECT, $controller, $config);
 		return $controller;
 	}
 
@@ -136,12 +143,12 @@ class Lajax
 	protected function initController($controller)
 	{
 		// Si le controller a déjà été initialisé, ne rien faire
-		if(($controller->response()))
+		if(($controller->response))
 		{
 			return;
 		}
 		// Placer les données dans le controleur
-		$controller->setResponse($this->response);
+		$controller->response = $this->response;
 		if(($this->cbEventInit))
 		{
 			$cb = $this->cbEventInit;
@@ -200,6 +207,71 @@ class Lajax
 			// Traiter la requete
 			$this->xajax->processRequest();
 		}
+	}
+
+	private function setRequestParameters(&$xajaxRequest, array $parameters)
+	{
+		$xajaxRequest->clearParameters();
+		$xajaxRequest->useSingleQuote();
+		foreach($parameters as $param)
+		{
+			if(is_numeric($param))
+			{
+				$xajaxRequest->addParameter(XAJAX_NUMERIC_VALUE, $param);
+			}
+			else if(is_string($param))
+			{
+				$xajaxRequest->addParameter(XAJAX_QUOTED_VALUE, $param);
+			}
+			else if(is_array($param))
+			{
+				$xajaxRequest->addParameter($param[0], $param[1]);
+			}
+		}
+	}
+
+	public function getScript($controller, $method, array $parameters = array())
+	{
+		if(!is_object($controller))
+			$controller = $this->getController($controller);
+		// The Xajax library turns the method names into lower case chars.
+		$method = strtolower($method);
+		// Check if the xajax method exists
+		if(!array_key_exists($method, $controller->requests))
+		{
+			return '';
+		}
+		$request = $controller->requests[$method];
+		$this->setRequestParameters($request, $parameters);
+		return $request->getScript();
+	}
+	
+	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, array $parameters = array())
+	{
+		if(!is_object($controller))
+			$controller = $this->getController($controller);
+		// The Xajax library turns the method names into lower case chars.
+		$method = strtolower($method);
+		// Check if the xajax method exists
+		if(!array_key_exists($method, $controller->requests))
+		{
+			return null;
+		}
+		// Since this request is to be stored in the Presenter class, it has to be cloned
+		$request = clone $controller->requests[$method];
+		$this->setRequestParameters($request, $parameters);
+		// Append the page number to the parameter list, if not yet given.
+		if(!$request->hasPageNumber())
+		{
+			$request->addParameter(XAJAX_PAGE_NUMBER, 0);
+		}
+	
+		$paginator = \Paginator::make(array(), $itemsTotal, $itemsPerPage);
+		$presenter = new Pagination\Presenter($paginator, $request);
+		$presenter->setCurrentPage($currentPage);
+		\View::share('presenter', $presenter);
+		\View::share('paginator', $paginator);
+		return $paginator;
 	}
 
 	/**

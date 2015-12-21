@@ -3,6 +3,7 @@
 return array(
 	'app' => array(
 		// 'route' => '',
+		// 'namespace' => '',
 		// 'controllers' => '',
 		// 'extensions' => '',
 	),
