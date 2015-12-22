@@ -17,9 +17,6 @@ class Lajax
 	// Extension of controllers files
 	protected $extension = '.php';
 
-	// Singleton
-	protected static $instance = null;
-
 	public function __construct($requestRoute, $controllerDir)
 	{
 		$this->xajax = new \xajax($requestRoute);
@@ -86,10 +83,6 @@ class Lajax
 		{
 			$classname = '\\' . $namespace . '\\' . str_replace('/', '\\', $classfile);
 		}
-		else
-		{
-			require_once($this->controllerDir . '/' . $classfile . $this->extension);
-		}
 
 		// Return the controller if it already exists
 		if(array_key_exists($classname, $this->controllers))
@@ -97,6 +90,7 @@ class Lajax
 			return $this->controllers[$classname];
 		}
 		// Create an instance of the controller
+		require_once($this->controllerDir . '/' . $classfile . $this->extension);
 		$controller = new $classname;
 		// Add in the controllers array
 		$this->controllers[$classname] = $controller;
@@ -157,7 +151,7 @@ class Lajax
 		$controller->__init();
 	}
 
-	public function getController($classname)
+	public function controller($classname)
 	{
 		$controller = $this->registerClass($classname);
 		$this->initController($controller);
@@ -170,7 +164,7 @@ class Lajax
 		$class = $_POST['xjxcls'];
 		$method = $_POST['xjxmthd'];
 		// Todo : check $class ans $method validity and exit in case of error
-		$controller = $this->getController($class);
+		$controller = $this->controller($class);
 
 		// Set the actual controller class name in the Xajax request plugin,
 		// so the Xajax library can invoke the right callable object. 
@@ -230,10 +224,10 @@ class Lajax
 		}
 	}
 
-	public function getScript($controller, $method, array $parameters = array())
+	public function call($controller, $method, array $parameters = array())
 	{
 		if(!is_object($controller))
-			$controller = $this->getController($controller);
+			$controller = $this->controller($controller);
 		// The Xajax library turns the method names into lower case chars.
 		$method = strtolower($method);
 		// Check if the xajax method exists
@@ -249,7 +243,7 @@ class Lajax
 	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, array $parameters = array())
 	{
 		if(!is_object($controller))
-			$controller = $this->getController($controller);
+			$controller = $this->controller($controller);
 		// The Xajax library turns the method names into lower case chars.
 		$method = strtolower($method);
 		// Check if the xajax method exists
