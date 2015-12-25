@@ -12,17 +12,28 @@ class Lajax
 	// Array of registered Xajax controllers, and their requests
 	protected $controllers = array();
 	protected $requests = array();
+	protected $excludedMethods = array();
 	// Directory where class files are found
 	protected $controllerDir;
+	// Directory where plugin files are found
+	protected $extensionDir;
 	// Extension of controllers files
 	protected $extension = '.php';
 
-	public function __construct($requestRoute, $controllerDir)
+	public function __construct($requestRoute, $controllerDir, $extensionDir)
 	{
 		$this->xajax = new \xajax($requestRoute);
 		// $this->response = \xajax::getGlobalResponse();
 		$this->response = new Response();
 		$this->controllerDir = $controllerDir;
+		$this->extensionDir = $extensionDir;
+
+		// The public methods of the Controller bas class must not be exported to javascript
+		$controllerClass = new \ReflectionClass('Lagdo\Lajax\Controller');
+		foreach ($controllerClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $xMethod)
+		{
+			$this->excludedMethods[] = $xMethod->getShortName();
+		}
 	}
 
 	public function hasRequest()
@@ -65,6 +76,18 @@ class Lajax
 		$this->cbEventAfter = $closure;
 	}
 
+	public function registerPlugins()
+	{
+		// Register Xajax plugins
+		foreach (\File::files($this->extensionDir) as $file)
+		{
+			if(\File::extension($file) == "php")
+	        {
+	        	require_once($file);
+	        }
+		}
+	}
+
 	public function registerClass($classname)
 	{
 		$classname = str_replace(array('\\', '/'), array('.', '.'), $classname);
@@ -95,10 +118,12 @@ class Lajax
 		// Add in the controllers array
 		$this->controllers[$classname] = $controller;
 		// Register as a callable object in the Xajax library
-		$config = array();
+		$config = array(
+			'*' => array('exclude' => $this->excludedMethods)
+		);
 		if(($classpath))
 		{
-			$config['*'] = array('classpath' => $classpath);
+			$config['*']['classpath'] = $classpath;
 		}
 
 		$controller->requests = $this->xajax->register(XAJAX_CALLABLE_OBJECT, $controller, $config);
@@ -201,181 +226,6 @@ class Lajax
 			// Traiter la requete
 			$this->xajax->processRequest();
 		}
-	}
-
-	private function setRequestParameters(&$xajaxRequest, array $parameters)
-	{
-		$xajaxRequest->clearParameters();
-		$xajaxRequest->useSingleQuote();
-		foreach($parameters as $param)
-		{
-			if(is_numeric($param))
-			{
-				$xajaxRequest->addParameter(XAJAX_NUMERIC_VALUE, $param);
-			}
-			else if(is_string($param))
-			{
-				$xajaxRequest->addParameter(XAJAX_QUOTED_VALUE, $param);
-			}
-			else if(is_array($param))
-			{
-				$xajaxRequest->addParameter($param[0], $param[1]);
-			}
-		}
-	}
-
-	public function call($controller, $method, array $parameters = array())
-	{
-		if(!is_object($controller))
-			$controller = $this->controller($controller);
-		// The Xajax library turns the method names into lower case chars.
-		$method = strtolower($method);
-		// Check if the xajax method exists
-		if(!array_key_exists($method, $controller->requests))
-		{
-			return '';
-		}
-		$request = $controller->requests[$method];
-		$this->setRequestParameters($request, $parameters);
-		return $request->getScript();
-	}
-	
-	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, array $parameters = array())
-	{
-		if(!is_object($controller))
-			$controller = $this->controller($controller);
-		// The Xajax library turns the method names into lower case chars.
-		$method = strtolower($method);
-		// Check if the xajax method exists
-		if(!array_key_exists($method, $controller->requests))
-		{
-			return null;
-		}
-		// Since this request is to be stored in the Presenter class, it has to be cloned
-		$request = clone $controller->requests[$method];
-		$this->setRequestParameters($request, $parameters);
-		// Append the page number to the parameter list, if not yet given.
-		if(!$request->hasPageNumber())
-		{
-			$request->addParameter(XAJAX_PAGE_NUMBER, 0);
-		}
-	
-		$paginator = \Paginator::make(array(), $itemsTotal, $itemsPerPage);
-		$presenter = new Pagination\Presenter($paginator, $request);
-		$presenter->setCurrentPage($currentPage);
-		\View::share('presenter', $presenter);
-		\View::share('paginator', $paginator);
-		return $paginator;
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_FORM_VALUES
-	 * 
-	 * @param string $sFormId the id of the HTML form
-	 * @return array
-	 */
-	public function pForm($sFormId)
-	{
-		return array(XAJAX_FORM_VALUES, $sFormId);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_INPUT_VALUE
-	 * 
-	 * @param string $sInputId the id of the HTML input element
-	 * @return array
-	 */
-	public function pInput($sInputId)
-	{
-		return array(XAJAX_INPUT_VALUE, $sInputId);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_CHECKED_VALUE
-	 * 
-	 * @param string $sCheckedId the name of the HTML form element
-	 * @return array
-	 */
-	public function pChecked($sCheckedId)
-	{
-		return array(XAJAX_CHECKED_VALUE, $sCheckedId);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_ELEMENT_INNERHTML
-	 * 
-	 * @param string $sElementId the id of the HTML element
-	 * @return array
-	 */
-	public function pHtml($sElementId)
-	{
-		return array(XAJAX_ELEMENT_INNERHTML, $sElementId);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_QUOTED_VALUE
-	 * 
-	 * @param string $sValue the value of the parameter
-	 * @return array
-	 */
-	public function pQuoted($sValue)
-	{
-		return array(XAJAX_QUOTED_VALUE, $sValue);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_QUOTED_VALUE
-	 * 
-	 * @param string $sValue the value of the parameter
-	 * @return array
-	 */
-	public function pStr($sValue)
-	{
-		return $this->pQuoted($sValue);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_NUMERIC_VALUE
-	 * 
-	 * @param numeric $nValue the value of the parameter
-	 * @return array
-	 */
-	public function pNumeric($nValue)
-	{
-		return array(XAJAX_NUMERIC_VALUE, $nValue);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_NUMERIC_VALUE
-	 * 
-	 * @param numeric $nValue the value of the parameter
-	 * @return array
-	 */
-	public function pInt($nValue)
-	{
-		return $this->pNumeric(intval($nValue));
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_JS_VALUE
-	 * 
-	 * @param string $sValue the Js code of the parameter
-	 * @return array
-	 */
-	public function pJs($sValue)
-	{
-		return array(XAJAX_JS_VALUE, $sValue);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_PAGE_NUMBER
-	 * 
-	 * @return array
-	 */
-	public function pPage()
-	{
-		// By default, the value of a parameter of type XAJAX_PAGE_NUMBER is 0.
-		return array(XAJAX_PAGE_NUMBER, 0);
 	}
 }
 

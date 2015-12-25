@@ -31,7 +31,8 @@ class Presenter extends \Illuminate\Pagination\Presenter
 			$number = $this->currentPage + 1;
 		else
 			$number = $page;
-		return '<li><a href="javascript:;" onclick="' . $this->xajaxRequest->getScript($number) .
+		return '<li><a href="javascript:;" onclick="' .
+			$this->xajaxRequest->setPageNumber($number)->getScript() .
 			';return false;">' . $page . '</a></li>';
 	}
 

@@ -1,4 +1,6 @@
-<?php namespace Lagdo\Lajax;
+<?php
+
+namespace Lagdo\Lajax;
 
 class Response extends \xajaxResponse
 {

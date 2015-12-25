@@ -2,7 +2,7 @@
 
 class Controller
 {
-	protected $lajax = null;
+	protected $request = null;
 	// Application data
 	public $response = null;
 	// Javascripts requests to this class
@@ -10,20 +10,39 @@ class Controller
 
 	public function __construct()
 	{
-		$this->lajax = \App::make('lajax');
+		$this->request = \App::make('lajax.request');
 	}
 
 	public function __init()
 	{}
 
-	protected function call($method, array $parameters = array())
+	/**
+	 * Return the javascript call to an Xajax controller method
+	 *
+	 * @param string|object $controller the controller
+	 * @param string $method the name of the method
+	 * @param array $parameters the parameters of the method
+	 * @return string
+	 */
+	public function call($method, array $parameters = array())
 	{
-		return $this->lajax->call($this, $method, $parameters);
+		return $this->request->call($this, $method, $parameters);
 	}
 
-	protected function paginate($currentPage, $itemsPerPage, $itemsTotal, $method, array $parameters = array())
+	/**
+	 * Make the pagination for an Xajax controller method
+	 *
+	 * @param integer $currentPage the current page
+	 * @param integer $itemsPerPage the number of items per page page
+	 * @param integer $itemsTotal the total number of items
+	 * @param string|object $controller the controller
+	 * @param string $method the name of the method
+	 * @param array $parameters the parameters of the method
+	 * @return object the Laravel paginator instance
+	 */
+	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $method, array $parameters = array())
 	{
-		return $this->lajax->paginate($currentPage, $itemsPerPage, $itemsTotal, $this, $method, $parameters);
+		return $this->request->paginate($currentPage, $itemsPerPage, $itemsTotal, $this, $method, $parameters);
 	}
 
 	/**
@@ -32,9 +51,9 @@ class Controller
 	 * @param string $sFormId the id of the HTML form
 	 * @return array
 	 */
-	protected function pForm($sFormId)
+	protected function form($sFormId)
 	{
-		return $this->lajax->pForm($sFormId);
+		return $this->request->form($sFormId);
 	}
 
 	/**
@@ -43,9 +62,9 @@ class Controller
 	 * @param string $sInputId the id of the HTML input element
 	 * @return array
 	 */
-	protected function pInput($sInputId)
+	protected function input($sInputId)
 	{
-		return $this->lajax->pInput($sInputId);
+		return $this->request->input($sInputId);
 	}
 
 	/**
@@ -54,9 +73,9 @@ class Controller
 	 * @param string $sCheckedId the name of the HTML form element
 	 * @return array
 	 */
-	protected function pChecked($sCheckedId)
+	protected function checked($sCheckedId)
 	{
-		return $this->lajax->pChecked($sCheckedId);
+		return $this->request->checked($sCheckedId);
 	}
 
 	/**
@@ -65,9 +84,9 @@ class Controller
 	 * @param string $sElementId the id of the HTML element
 	 * @return array
 	 */
-	protected function pHtml($sElementId)
+	protected function html($sElementId)
 	{
-		return $this->lajax->pHtml($sElementId);
+		return $this->request->html($sElementId);
 	}
 
 	/**
@@ -76,9 +95,9 @@ class Controller
 	 * @param string $sValue the value of the parameter
 	 * @return array
 	 */
-	protected function pQuoted($sValue)
+	protected function quoted($sValue)
 	{
-		return $this->lajax->pQuoted($sValue);
+		return $this->request->quoted($sValue);
 	}
 
 	/**
@@ -87,9 +106,9 @@ class Controller
 	 * @param string $sValue the value of the parameter
 	 * @return array
 	 */
-	protected function pStr($sValue)
+	protected function str($sValue)
 	{
-		return $this->lajax->pStr($sValue);
+		return $this->request->str($sValue);
 	}
 
 	/**
@@ -98,9 +117,9 @@ class Controller
 	 * @param numeric $nValue the value of the parameter
 	 * @return array
 	 */
-	protected function pNumeric($nValue)
+	protected function numeric($nValue)
 	{
-		return $this->lajax->pNumeric($nValue);
+		return $this->request->numeric($nValue);
 	}
 
 	/**
@@ -109,9 +128,9 @@ class Controller
 	 * @param numeric $nValue the value of the parameter
 	 * @return array
 	 */
-	protected function pInt($nValue)
+	protected function int($nValue)
 	{
-		return $this->lajax->pInt($nValue);
+		return $this->request->int($nValue);
 	}
 
 	/**
@@ -120,9 +139,9 @@ class Controller
 	 * @param string $sValue the Js code of the parameter
 	 * @return array
 	 */
-	protected function pJs($sValue)
+	protected function js($sValue)
 	{
-		return $this->lajax->pJs($sValue);
+		return $this->request->js($sValue);
 	}
 
 	/**
@@ -130,9 +149,8 @@ class Controller
 	 * 
 	 * @return array
 	 */
-	protected function pPage()
+	protected function page()
 	{
-		// By default, the value of a parameter of type XAJAX_PAGE_NUMBER is 0.
-		return $this->lajax->pPage();
+		return $this->request->page();
 	}
 }

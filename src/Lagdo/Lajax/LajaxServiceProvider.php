@@ -26,6 +26,9 @@ class LajaxServiceProvider extends ServiceProvider
 			$loader = require base_path() . '/vendor/autoload.php';
 			$loader->setPsr4($namespace . '\\', \Config::get('lajax::app.controllers', app_path() . '/ajax/controllers'));
 		}
+
+		// Define the helpers
+		require_once(__DIR__ . '/Facades/helpers.php');
 	}
 
 	/**
@@ -44,32 +47,25 @@ class LajaxServiceProvider extends ServiceProvider
 			$extensionDir = \Config::get('lajax::app.extensions', app_path() . '/ajax/extensions');
 
 			// Create the Xajax object
-			$xajax = new Lajax($requestRoute, $controllerDir);
+			$lajax = new Lajax($requestRoute, $controllerDir, $extensionDir);
 
-			// Ces inclusions doivent se placer après la création de l'objet xajax
-			// mais avant les appels à la méthode configure
-			foreach (\File::files($extensionDir) as $file)
-			{
-				if(\File::extension($file) == "php")
-		        {
-		        	require_once($file);
-		        }
-			}
+			// Register Xajax plugins
+			$lajax->registerPlugins();
 
 			// Dir and URL of Javascript files
 			$defaultJsDir = public_path('/packages/lagdo/xajax/js');
 			$defaultJsUrl = asset('/packages/lagdo/xajax/js');
 			// Xajax library config
-			$xajax->configure('wrapperPrefix', \Config::get('lajax::lib.wrapperPrefix', 'Xajax'));
-			$xajax->configure('characterEncoding', \Config::get('lajax::lib.characterEncoding', 'UTF-8'));
-			$xajax->configure('deferScriptGeneration', \Config::get('lajax::lib.deferScriptGeneration', false));
-			$xajax->configure('deferDirectory', \Config::get('lajax::lib.deferDirectory', 'deferred'));
-			$xajax->configure('javascript URI', \Config::get('lajax::lib.javascript_URI', $defaultJsUrl));
-			$xajax->configure('javascript Dir', \Config::get('lajax::lib.javascript_Dir', $defaultJsDir));
-			$xajax->configure('errorHandler', \Config::get('lajax::lib.errorHandler', false));
-			$xajax->configure('debug', \Config::get('lajax::lib.debug', false));
+			$lajax->configure('wrapperPrefix', \Config::get('lajax::lib.wrapperPrefix', 'Xajax'));
+			$lajax->configure('characterEncoding', \Config::get('lajax::lib.characterEncoding', 'UTF-8'));
+			$lajax->configure('deferScriptGeneration', \Config::get('lajax::lib.deferScriptGeneration', false));
+			$lajax->configure('deferDirectory', \Config::get('lajax::lib.deferDirectory', 'deferred'));
+			$lajax->configure('javascript URI', \Config::get('lajax::lib.javascript_URI', $defaultJsUrl));
+			$lajax->configure('javascript Dir', \Config::get('lajax::lib.javascript_Dir', $defaultJsDir));
+			$lajax->configure('errorHandler', \Config::get('lajax::lib.errorHandler', false));
+			$lajax->configure('debug', \Config::get('lajax::lib.debug', false));
 
-			return $xajax;
+			return $lajax;
 		});
 
 		// Register the Lajax commands
@@ -85,6 +81,14 @@ class LajaxServiceProvider extends ServiceProvider
 			'lajax::commands.config',
 			'lajax::commands.assets'
 		);
+
+		// Register the Lajax Request singleton
+		$this->app['lajax.request'] = $this->app->share(function($app)
+		{
+			// Create the Xajax Request object
+			$request = new Request();
+			return $request;
+		});
 	}
 
 	/**
@@ -94,6 +98,6 @@ class LajaxServiceProvider extends ServiceProvider
 	 */
 	public function provides()
 	{
-		return array('lajax');
+		return array('lajax, lajax_request');
 	}
 }
