@@ -2,16 +2,14 @@
 
 class Controller
 {
-	protected $request = null;
 	// Application data
+	public $request = null;
 	public $response = null;
 	// Javascripts requests to this class
 	public $requests = array();
 
 	public function __construct()
-	{
-		$this->request = \App::make('lajax.request');
-	}
+	{}
 
 	public function __init()
 	{}
@@ -46,111 +44,111 @@ class Controller
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_FORM_VALUES
+	 * Get all the values in a form
 	 * 
 	 * @param string $sFormId the id of the HTML form
 	 * @return array
 	 */
-	protected function form($sFormId)
+	protected function lxForm($sFormId)
 	{
 		return $this->request->form($sFormId);
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_INPUT_VALUE
+	 * Get the value of an input field
 	 * 
 	 * @param string $sInputId the id of the HTML input element
 	 * @return array
 	 */
-	protected function input($sInputId)
+	protected function lxInput($sInputId)
 	{
 		return $this->request->input($sInputId);
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_CHECKED_VALUE
+	 * Get the value of a checkbox field
 	 * 
-	 * @param string $sCheckedId the name of the HTML form element
+	 * @param string $sInputId the name of the HTML checkbox element
 	 * @return array
 	 */
-	protected function checked($sCheckedId)
+	protected function lxCheckbox($sInputId)
 	{
-		return $this->request->checked($sCheckedId);
+		return $this->request->checked($sInputId);
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_ELEMENT_INNERHTML
+	 * Get the value of a select field
+	 * 
+	 * @param string $sInputId the name of the HTML checkbox element
+	 * @return array
+	 */
+	protected function lxSelect($sInputId)
+	{
+		return $this->request->checked($sInputId);
+	}
+
+	/**
+	 * Get the value of a element in the DOM
 	 * 
 	 * @param string $sElementId the id of the HTML element
 	 * @return array
 	 */
-	protected function html($sElementId)
+	protected function lxHtml($sElementId)
 	{
 		return $this->request->html($sElementId);
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_QUOTED_VALUE
+	 * Return a string value
 	 * 
 	 * @param string $sValue the value of the parameter
 	 * @return array
 	 */
-	protected function quoted($sValue)
+	protected function lxString($sValue)
 	{
-		return $this->request->quoted($sValue);
+		return $this->request->string($sValue);
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_QUOTED_VALUE
-	 * 
-	 * @param string $sValue the value of the parameter
-	 * @return array
-	 */
-	protected function str($sValue)
-	{
-		return $this->request->str($sValue);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_NUMERIC_VALUE
+	 * Return a numeric value
 	 * 
 	 * @param numeric $nValue the value of the parameter
 	 * @return array
 	 */
-	protected function numeric($nValue)
+	protected function lxNumeric($nValue)
 	{
 		return $this->request->numeric($nValue);
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_NUMERIC_VALUE
+	 * Return an integer value
 	 * 
 	 * @param numeric $nValue the value of the parameter
 	 * @return array
 	 */
-	protected function int($nValue)
+	protected function lxInteger($nValue)
 	{
-		return $this->request->int($nValue);
+		return $this->request->integer($nValue);
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_JS_VALUE
+	 * Return a javascript expression
 	 * 
 	 * @param string $sValue the Js code of the parameter
 	 * @return array
 	 */
-	protected function js($sValue)
+	protected function lxJavascript($sValue)
 	{
-		return $this->request->js($sValue);
+		return $this->request->javascript($sValue);
 	}
 
 	/**
-	 * Make a parameter of type XAJAX_PAGE_NUMBER
+	 * Return a page number
 	 * 
 	 * @return array
 	 */
-	protected function page()
+	protected function lxPageNumber()
 	{
-		return $this->request->page();
+		return $this->request->pageNumber();
 	}
 }

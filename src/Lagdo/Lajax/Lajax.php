@@ -167,6 +167,7 @@ class Lajax
 			return;
 		}
 		// Placer les données dans le controleur
+		$controller->request = \App::make('lajax.request');
 		$controller->response = $this->response;
 		if(($this->cbEventInit))
 		{

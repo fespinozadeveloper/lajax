@@ -89,7 +89,7 @@ class Request
 		{
 			return null;
 		}
-		// Since this request must be stored in the Presenter class, it has to be cloned
+		// Since multiple requests can be created with different sets of parameters, they have to be cloned.
 		$request = clone $controller->requests[$method];
 		$this->setParameters($request, $parameters);
 		// Append the page number to the parameter list, if not yet given.
@@ -131,12 +131,12 @@ class Request
 	/**
 	 * Make a parameter of type XAJAX_CHECKED_VALUE
 	 * 
-	 * @param string $sCheckedId the name of the HTML form element
+	 * @param string $sInputId the name of the HTML form element
 	 * @return array
 	 */
-	public function checked($sCheckedId)
+	public function checked($sInputId)
 	{
-		return array(XAJAX_CHECKED_VALUE, $sCheckedId);
+		return array(XAJAX_CHECKED_VALUE, $sInputId);
 	}
 
 	/**
@@ -156,20 +156,9 @@ class Request
 	 * @param string $sValue the value of the parameter
 	 * @return array
 	 */
-	public function quoted($sValue)
+	public function string($sValue)
 	{
 		return array(XAJAX_QUOTED_VALUE, $sValue);
-	}
-
-	/**
-	 * Make a parameter of type XAJAX_QUOTED_VALUE
-	 * 
-	 * @param string $sValue the value of the parameter
-	 * @return array
-	 */
-	public function str($sValue)
-	{
-		return $this->quoted($sValue);
 	}
 
 	/**
@@ -189,7 +178,7 @@ class Request
 	 * @param numeric $nValue the value of the parameter
 	 * @return array
 	 */
-	public function int($nValue)
+	public function integer($nValue)
 	{
 		return $this->numeric(intval($nValue));
 	}
@@ -197,10 +186,10 @@ class Request
 	/**
 	 * Make a parameter of type XAJAX_JS_VALUE
 	 * 
-	 * @param string $sValue the Js code of the parameter
+	 * @param string $sValue the javascript code of the parameter
 	 * @return array
 	 */
-	public function js($sValue)
+	public function javascript($sValue)
 	{
 		return array(XAJAX_JS_VALUE, $sValue);
 	}
@@ -210,7 +199,7 @@ class Request
 	 * 
 	 * @return array
 	 */
-	public function page()
+	public function pageNumber()
 	{
 		// By default, the value of a parameter of type XAJAX_PAGE_NUMBER is 0.
 		return array(XAJAX_PAGE_NUMBER, 0);

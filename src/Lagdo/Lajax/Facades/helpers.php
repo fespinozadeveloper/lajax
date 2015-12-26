@@ -30,7 +30,7 @@ function lxPaginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $meth
 }
 
 /**
- * Make a parameter of type XAJAX_FORM_VALUES
+ * Get all the values in a form
  *
  * @param string $sFormId the id of the HTML form
  * @return array
@@ -41,7 +41,7 @@ function lxForm($sFormId)
 }
 
 /**
- * Make a parameter of type XAJAX_INPUT_VALUE
+ * Get the value of an input field
  *
  * @param string $sInputId the id of the HTML input element
  * @return array
@@ -52,18 +52,29 @@ function lxInput($sInputId)
 }
 
 /**
- * Make a parameter of type XAJAX_CHECKED_VALUE
+ * Get the value of a checkbox field
  *
- * @param string $sCheckedId the name of the HTML form element
+ * @param string $sInputId the name of the HTML checkbox element
  * @return array
  */
-function lxChecked($sCheckedId)
+function lxCheckbox($sInputId)
 {
-	return \App::make('lajax.request')->checked($sCheckedId);
+	return \App::make('lajax.request')->checked($sInputId);
 }
 
 /**
- * Make a parameter of type XAJAX_ELEMENT_INNERHTML
+ * Get the value of a select field
+ *
+ * @param string $sInputId the name of the HTML checkbox element
+ * @return array
+ */
+function lxSelect($sInputId)
+{
+	return \App::make('lajax.request')->checked($sInputId);
+}
+
+/**
+ * Get the value of a element in the DOM
  *
  * @param string $sElementId the id of the HTML element
  * @return array
@@ -74,29 +85,18 @@ function lxHtml($sElementId)
 }
 
 /**
- * Make a parameter of type XAJAX_QUOTED_VALUE
+ * Return a string value
  *
  * @param string $sValue the value of the parameter
  * @return array
  */
-function lxQuoted($sValue)
+function lxString($sValue)
 {
-	return \App::make('lajax.request')->quoted($sValue);
+	return \App::make('lajax.request')->string($sValue);
 }
 
 /**
- * Make a parameter of type XAJAX_QUOTED_VALUE
- *
- * @param string $sValue the value of the parameter
- * @return array
- */
-function lxStr($sValue)
-{
-	return \App::make('lajax.request')->str($sValue);
-}
-
-/**
- * Make a parameter of type XAJAX_NUMERIC_VALUE
+ * Return a numeric value
  *
  * @param numeric $nValue the value of the parameter
  * @return array
@@ -107,33 +107,33 @@ function lxNumeric($nValue)
 }
 
 /**
- * Make a parameter of type XAJAX_NUMERIC_VALUE
+ * Return an integer value
  *
  * @param numeric $nValue the value of the parameter
  * @return array
  */
-function lxInt($nValue)
+function lxInteger($nValue)
 {
-	return \App::make('lajax.request')->int($nValue);
+	return \App::make('lajax.request')->integer($nValue);
 }
 
 /**
- * Make a parameter of type XAJAX_JS_VALUE
+ * Return a javascript expression
  *
  * @param string $sValue the Js code of the parameter
  * @return array
  */
-function lxJs($sValue)
+function lxJavascript($sValue)
 {
-	return \App::make('lajax.request')->js($sValue);
+	return \App::make('lajax.request')->javascript($sValue);
 }
 
 /**
- * Make a parameter of type XAJAX_PAGE_NUMBER
+ * Return a page number
  *
  * @return array
  */
-function lxPage()
+function lxPageNumber()
 {
-	return \App::make('lajax.request')->page();
+	return \App::make('lajax.request')->pageNumber();
 }
