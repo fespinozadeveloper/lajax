@@ -12,7 +12,7 @@ class Lajax
 	// Array of registered Xajax controllers, and their requests
 	protected $controllers = array();
 	protected $requests = array();
-	protected $excludedMethods = array();
+	protected $excluded = array();
 	// Directory where class files are found
 	protected $controllerDir;
 	// Directory where plugin files are found
@@ -20,7 +20,7 @@ class Lajax
 	// Extension of controllers files
 	protected $extension = '.php';
 
-	public function __construct($requestRoute, $controllerDir, $extensionDir)
+	public function __construct($requestRoute, $controllerDir, $extensionDir, $excluded)
 	{
 		$this->xajax = new \xajax($requestRoute);
 		// $this->response = \xajax::getGlobalResponse();
@@ -28,11 +28,15 @@ class Lajax
 		$this->controllerDir = $controllerDir;
 		$this->extensionDir = $extensionDir;
 
-		// The public methods of the Controller bas class must not be exported to javascript
+		if(is_array($excluded))
+		{
+			$this->excluded = array_values($excluded);
+		}
+		// The public methods of the Controller base class must not be exported to javascript
 		$controllerClass = new \ReflectionClass('Lagdo\Lajax\Controller');
 		foreach ($controllerClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $xMethod)
 		{
-			$this->excludedMethods[] = $xMethod->getShortName();
+			$this->excluded[] = $xMethod->getShortName();
 		}
 	}
 
@@ -119,7 +123,7 @@ class Lajax
 		$this->controllers[$classname] = $controller;
 		// Register as a callable object in the Xajax library
 		$config = array(
-			'*' => array('exclude' => $this->excludedMethods)
+			'*' => array('excluded' => $controller->excluded($this->excluded))
 		);
 		if(($classpath))
 		{
@@ -162,19 +166,19 @@ class Lajax
 	protected function initController($controller)
 	{
 		// Si le controller a déjà été initialisé, ne rien faire
-		if(($controller->response))
+		if(!($controller) || ($controller->response))
 		{
 			return;
 		}
 		// Placer les données dans le controleur
 		$controller->request = \App::make('lajax.request');
 		$controller->response = $this->response;
+		$controller->__init();
 		if(($this->cbEventInit))
 		{
 			$cb = $this->cbEventInit;
 			$cb($controller);
 		}
-		$controller->__init();
 	}
 
 	public function controller($classname)

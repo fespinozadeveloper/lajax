@@ -42,12 +42,13 @@ class LajaxServiceProvider extends ServiceProvider
 		$this->app['lajax'] = $this->app->share(function($app)
 		{
 			// Xajax application config
-			$requestRoute = \Config::get('lajax::app.route', '/xajax');
+			$requestRoute = \Config::get('lajax::app.route', 'xajax');
 			$controllerDir = \Config::get('lajax::app.controllers', app_path() . '/ajax/controllers');
 			$extensionDir = \Config::get('lajax::app.extensions', app_path() . '/ajax/extensions');
+			$excluded = \Config::get('lajax::app.excluded', array());
 
 			// Create the Xajax object
-			$lajax = new Lajax($requestRoute, $controllerDir, $extensionDir);
+			$lajax = new Lajax($requestRoute, $controllerDir, $extensionDir, $excluded);
 
 			// Register Xajax plugins
 			$lajax->registerPlugins();

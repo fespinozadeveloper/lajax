@@ -6,6 +6,7 @@ return array(
 		// 'namespace' => '',
 		// 'controllers' => '',
 		// 'extensions' => '',
+		// 'excluded' => [],
 	),
 	'lib' => array(
 		'wrapperPrefix' => 'Xajax',

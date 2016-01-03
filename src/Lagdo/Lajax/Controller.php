@@ -15,6 +15,22 @@ class Controller
 	{}
 
 	/**
+	 * Return an array of methods that should not be exported to javascript
+	 *
+	 * @param array $excluded the methods excluded by general config
+	 * @return array The whole list of excluded methods
+	 */
+	final public function excluded(array $excluded)
+	{
+		// Methods that should not be exported
+		if(property_exists($this, 'excluded') && is_array($this->excluded))
+		{
+			return array_merge($excluded, array_values($this->excluded));
+		}
+		return $excluded;
+	}
+
+	/**
 	 * Return the javascript call to an Xajax controller method
 	 *
 	 * @param string|object $controller the controller
@@ -22,7 +38,7 @@ class Controller
 	 * @param array $parameters the parameters of the method
 	 * @return string
 	 */
-	public function call($method, array $parameters = array())
+	final public function call($method, array $parameters = array())
 	{
 		return $this->request->call($this, $method, $parameters);
 	}
@@ -38,7 +54,7 @@ class Controller
 	 * @param array $parameters the parameters of the method
 	 * @return object the Laravel paginator instance
 	 */
-	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $method, array $parameters = array())
+	final public function paginate($currentPage, $itemsPerPage, $itemsTotal, $method, array $parameters = array())
 	{
 		return $this->request->paginate($currentPage, $itemsPerPage, $itemsTotal, $this, $method, $parameters);
 	}
