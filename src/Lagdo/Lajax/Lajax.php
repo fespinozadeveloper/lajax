@@ -5,26 +5,31 @@ class Lajax
 	protected $xajax = null;
 	protected $response = null;
 
-	protected $cbEventBefore = null;
-	protected $cbEventAfter = null;
-	protected $cbEventInit = null;
+	protected $preCallback = null;
+	protected $postCallback = null;
+	protected $initCallback = null;
 
 	// Array of registered Xajax controllers, and their requests
 	protected $controllers = array();
 	protected $requests = array();
 	protected $excluded = array();
+	// Requested controller
+	protected $controller = null;
 	// Directory where class files are found
 	protected $controllerDir;
 	// Directory where plugin files are found
 	protected $extensionDir;
 	// Extension of controllers files
 	protected $extension = '.php';
+	// Namespace of Xajax controllers
+	protected $namespace = '';
 
-	public function __construct($requestRoute, $controllerDir, $extensionDir, $excluded)
+	public function __construct($requestRoute, $namespace, $controllerDir, $extensionDir, $excluded)
 	{
 		$this->xajax = new \xajax($requestRoute);
 		// $this->response = \xajax::getGlobalResponse();
 		$this->response = new Response();
+		$this->namespace = $namespace;
 		$this->controllerDir = $controllerDir;
 		$this->extensionDir = $extensionDir;
 
@@ -65,19 +70,19 @@ class Lajax
 		return $this->xajax->configure($param, $value);
 	}
 
-	public function setEventInit($closure)
+	public function setInitCallback($callable)
 	{
-		$this->cbEventInit = $closure;
+		$this->initCallback = $callable;
 	}
 
-	public function setEventBefore($closure)
+	public function setPreCallback($callable)
 	{
-		$this->cbEventBefore = $closure;
+		$this->preCallback = $callable;
 	}
 
-	public function setEventAfter($closure)
+	public function setPostCallback($callable)
 	{
-		$this->cbEventAfter = $closure;
+		$this->postCallback = $callable;
 	}
 
 	public function registerPlugins()
@@ -92,35 +97,42 @@ class Lajax
 		}
 	}
 
-	public function registerClass($classname)
+	public function registerClass($name)
 	{
-		$classname = str_replace(array('\\', '/'), array('.', '.'), $classname);
+		$alias = str_replace(array('\\', '/'), array('.', '.'), $name);
 		// Remove trailing dots
-		$classname = trim($classname, '.');
+		$alias = trim($alias, '.');
+		$classfile = str_replace('.', '/', $alias) . $this->extension;
+		// Check if controller file exists
+		if(!\File::exists($this->controllerDir . '/' . $classfile))
+		{
+			// Todo : throw an exception
+			return null;
+		}
+		// Return the controller if it already exists
+		if(array_key_exists($alias, $this->controllers))
+		{
+			return $this->controllers[$alias];
+		}
 		$classpath = '';
-		$classfile = $classname;
+		$classname = $alias;
 		if(($lastDotPos = strrpos($classname, '.')) !== false)
 		{
 			$classpath = substr($classname, 0, $lastDotPos);
 			$classname = substr($classname, $lastDotPos + 1);
-			$classfile = str_replace('.', '/', $classpath) . '/' . $classname;
 		}
 		// Set the namespace, if defined
-		if(($namespace = trim(\Config::get('lajax::app.namespace'), '\\')))
+		if(($this->namespace))
 		{
-			$classname = '\\' . $namespace . '\\' . str_replace('/', '\\', $classfile);
+			$classname = '\\' . $this->namespace . '\\' . str_replace('.', '\\', $alias);
 		}
 
-		// Return the controller if it already exists
-		if(array_key_exists($classname, $this->controllers))
-		{
-			return $this->controllers[$classname];
-		}
 		// Create an instance of the controller
-		require_once($this->controllerDir . '/' . $classfile . $this->extension);
+		require_once($this->controllerDir . '/' . $classfile);
 		$controller = new $classname;
 		// Add in the controllers array
-		$this->controllers[$classname] = $controller;
+		$controller->alias = $alias;
+		$this->controllers[$alias] = $controller;
 		// Register as a callable object in the Xajax library
 		$config = array(
 			'*' => array('excluded' => $controller->excluded($this->excluded))
@@ -173,12 +185,12 @@ class Lajax
 		// Placer les données dans le controleur
 		$controller->request = \App::make('lajax.request');
 		$controller->response = $this->response;
-		$controller->__init();
-		if(($this->cbEventInit))
+		if(($this->initCallback))
 		{
-			$cb = $this->cbEventInit;
+			$cb = $this->initCallback;
 			$cb($controller);
 		}
+		$controller->init();
 	}
 
 	public function controller($classname)
@@ -188,35 +200,35 @@ class Lajax
 		return $controller;
 	}
 
-	public function eventBefore(&$bEndRequest)
+	public function preProcess(&$bEndRequest)
 	{
 		// Include called class
 		$class = $_POST['xjxcls'];
 		$method = $_POST['xjxmthd'];
-		// Todo : check $class ans $method validity and exit in case of error
-		$controller = $this->controller($class);
+		// Todo : Sanitize $class ans $method inputs
+		$this->controller = $this->controller($class);
 
 		// Set the actual controller class name in the Xajax request plugin,
 		// so the Xajax library can invoke the right callable object. 
 		$xajaxPluginManager = \xajaxPluginManager::getInstance();
 		$xajaxCallableObjectPlugin = $xajaxPluginManager->getRequestPlugin('xajaxCallableObjectPlugin');
-		$xajaxCallableObjectPlugin->setRequestedClass(get_class($controller));
+		$xajaxCallableObjectPlugin->setRequestedClass(get_class($this->controller));
 
 		// Call the user defined callback
-		if(($this->cbEventBefore))
+		if(($this->preCallback))
 		{
-			$cb = $this->cbEventBefore;
-			$cb($class, $method, $bEndRequest);
+			$cb = $this->preCallback;
+			$cb($this->controller, $method, $bEndRequest);
 		}
 		return $this->response;
 	}
 
-	public function eventAfter()
+	public function postProcess()
 	{
-		if(($this->cbEventAfter))
+		if(($this->postCallback))
 		{
-			$cb = $this->cbEventAfter;
-			$cb();
+			$cb = $this->postCallback;
+			$cb($this->controller);
 		}
 		return $this->response;
 	}
@@ -224,8 +236,8 @@ class Lajax
 	public function processRequest()
 	{
 		// Process Xajax Request
-		$this->xajax->register(XAJAX_PROCESSING_EVENT, XAJAX_PROCESSING_EVENT_BEFORE, array($this, 'eventBefore'));
-		$this->xajax->register(XAJAX_PROCESSING_EVENT, XAJAX_PROCESSING_EVENT_AFTER, array($this, 'eventAfter'));
+		$this->xajax->register(XAJAX_PROCESSING_EVENT, XAJAX_PROCESSING_EVENT_BEFORE, array($this, 'preProcess'));
+		$this->xajax->register(XAJAX_PROCESSING_EVENT, XAJAX_PROCESSING_EVENT_AFTER, array($this, 'postProcess'));
 		if($this->xajax->canProcessRequest())
 		{
 			// Traiter la requete

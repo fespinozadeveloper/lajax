@@ -11,7 +11,7 @@ class Controller
 	public function __construct()
 	{}
 
-	public function __init()
+	public function init()
 	{}
 
 	/**
