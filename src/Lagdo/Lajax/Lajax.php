@@ -24,6 +24,11 @@ class Lajax
 	// Namespace of Xajax controllers
 	protected $namespace = '';
 
+	/**
+	 * Create a new Lajax instance.
+	 *
+	 * @return void
+	 */
 	public function __construct($requestRoute, $namespace, $controllerDir, $extensionDir, $excluded)
 	{
 		$this->xajax = new \xajax($requestRoute);
@@ -45,46 +50,96 @@ class Lajax
 		}
 	}
 
+	/**
+	 * Check if the current request is an Xajax request.
+	 *
+	 * @return boolean  True if the request is Xajax, false otherwise.
+	 */
 	public function hasRequest()
 	{
 		return $this->xajax->canProcessRequest();
 	}
 
+	/**
+	 * Get the Xajax response.
+	 *
+	 * @return object  the Xajax response
+	 */
 	public function response()
 	{
 		return $this->response;
 	}
 
+	/**
+	 * Get the javascript code generated for all registered classes.
+	 *
+	 * @return string  the javascript code
+	 */
 	public function javascript()
 	{
 		return $this->xajax->getJavascript();
 	}
 
+	/**
+	 * Get the javascript code generated for all registered classes.
+	 *
+	 * @return string  the javascript code
+	 */
 	public function js()
 	{
 		return $this->xajax->getJavascript();
 	}
 
+	/**
+	 * Configure a parameter in the Xajax library.
+	 *
+	 * @param  string  $param the parameter name
+	 * @param  string  $value the parameter value
+	 * @return voif
+	 */
 	public function configure($param, $value)
 	{
-		return $this->xajax->configure($param, $value);
+		$this->xajax->configure($param, $value);
 	}
 
+	/**
+	 * Set the init callback, used to initialise controllers.
+	 *
+	 * @param  callable  $callable the callback function
+	 * @return void
+	 */
 	public function setInitCallback($callable)
 	{
 		$this->initCallback = $callable;
 	}
 
+	/**
+	 * Set the pre-request processing callback.
+	 *
+	 * @param  callable  $callable the callback function
+	 * @return void
+	 */
 	public function setPreCallback($callable)
 	{
 		$this->preCallback = $callable;
 	}
 
+	/**
+	 * Set the post-request processing callback.
+	 *
+	 * @param  callable  $callable the callback function
+	 * @return void
+	 */
 	public function setPostCallback($callable)
 	{
 		$this->postCallback = $callable;
 	}
 
+	/**
+	 * Register all the plugins defined in the extension directory.
+	 *
+	 * @return void
+	 */
 	public function registerPlugins()
 	{
 		// Register Xajax plugins
@@ -97,6 +152,12 @@ class Lajax
 		}
 	}
 
+	/**
+	 * Register a controller class.
+	 *
+	 * @param  string  $name the class name
+	 * @return object  an instance of the controller
+	 */
 	public function registerClass($name)
 	{
 		$alias = str_replace(array('\\', '/'), array('.', '.'), $name);
@@ -135,7 +196,7 @@ class Lajax
 		$this->controllers[$alias] = $controller;
 		// Register as a callable object in the Xajax library
 		$config = array(
-			'*' => array('excluded' => $controller->excluded($this->excluded))
+			'*' => array('excluded' => $this->excluded($controller))
 		);
 		if(($classpath))
 		{
@@ -146,15 +207,26 @@ class Lajax
 		return $controller;
 	}
 
-	public function registerClasses(array $classnames)
+	/**
+	 * Register an array of controller classes.
+	 *
+	 * @param  array  $names the class names
+	 * @return void
+	 */
+	public function registerClasses(array $names)
 	{
-		array_unique($classnames);
-		foreach($classnames as $classname)
+		array_unique($names);
+		foreach($names as $name)
 		{
-			$this->registerClass($classname);
+			$this->registerClass($name);
 		}
 	}
 
+	/**
+	 * Register all the classes defined in the controller directory.
+	 *
+	 * @return void
+	 */
 	public function register()
 	{
 		$dir = $this->controllerDir;
@@ -175,6 +247,11 @@ class Lajax
 		}
 	}
 
+	/**
+	 * Initialise a controller.
+	 *
+	 * @return void
+	 */
 	protected function initController($controller)
 	{
 		// Si le controller a déjà été initialisé, ne rien faire
@@ -193,6 +270,12 @@ class Lajax
 		$controller->init();
 	}
 
+	/**
+	 * Get a controller instance.
+	 *
+	 * @param  string  $classname the controller class name
+	 * @return object  an instance of the controller
+	 */
 	public function controller($classname)
 	{
 		$controller = $this->registerClass($classname);
@@ -200,13 +283,41 @@ class Lajax
 		return $controller;
 	}
 
+	/**
+	 * Return an array of methods that should not be exported to javascript
+	 *
+	 * @param object $controller an instance of an Xajax controller
+	 * @return array The list of excluded methods
+	 */
+	protected function excluded($controller)
+	{
+		// Methods that should not be exported
+		if(property_exists($controller, 'excluded') && is_array($controller->excluded))
+		{
+			return array_merge($this->excluded, array_values($controller->excluded));
+		}
+		return $this->excluded;
+	}
+
+	/**
+	 * The pre-request processing callback passed to the Xajax library.
+	 *
+	 * @param  boolean  &$bEndRequest if set to true, the request processing is interrupted.
+	 * @return object  the Xajax response
+	 */
 	public function preProcess(&$bEndRequest)
 	{
-		// Include called class
+		// Instanciate the called class
 		$class = $_POST['xjxcls'];
 		$method = $_POST['xjxmthd'];
-		// Todo : Sanitize $class ans $method inputs
+		// Todo : check and sanitize $class and $method inputs
 		$this->controller = $this->controller($class);
+		if(!$this->controller)
+		{
+			// End the request processing if a controller cannot be found.
+			$bEndRequest = true;
+			return $this->response;
+		}
 
 		// Set the actual controller class name in the Xajax request plugin,
 		// so the Xajax library can invoke the right callable object. 
@@ -223,6 +334,11 @@ class Lajax
 		return $this->response;
 	}
 
+	/**
+	 * The post-request processing callback passed to the Xajax library.
+	 *
+	 * @return object  the Xajax response
+	 */
 	public function postProcess()
 	{
 		if(($this->postCallback))
@@ -233,6 +349,11 @@ class Lajax
 		return $this->response;
 	}
 
+	/**
+	 * Process the current Xajax request.
+	 *
+	 * @return string  the javascript code
+	 */
 	public function processRequest()
 	{
 		// Process Xajax Request

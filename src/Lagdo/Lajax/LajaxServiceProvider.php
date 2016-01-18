@@ -100,6 +100,6 @@ class LajaxServiceProvider extends ServiceProvider
 	 */
 	public function provides()
 	{
-		return array('lajax, lajax_request');
+		return array('lajax, lajax.request');
 	}
 }

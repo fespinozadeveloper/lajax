@@ -6,6 +6,11 @@ class Request
 {
 	protected $lajax = null;
 
+	/**
+	 * Create a new Request instance.
+	 *
+	 * @return void
+	 */
 	public function __construct()
 	{
 		$this->lajax = \App::make('lajax');

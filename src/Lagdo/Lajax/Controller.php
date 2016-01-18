@@ -8,27 +8,21 @@ class Controller
 	// Javascripts requests to this class
 	public $requests = array();
 
+	/**
+	 * Create a new Controller instance.
+	 *
+	 * @return void
+	 */
 	public function __construct()
 	{}
 
+	/**
+	 * Initialise the controller.
+	 *
+	 * @return void
+	 */
 	public function init()
 	{}
-
-	/**
-	 * Return an array of methods that should not be exported to javascript
-	 *
-	 * @param array $excluded the methods excluded by general config
-	 * @return array The whole list of excluded methods
-	 */
-	final public function excluded(array $excluded)
-	{
-		// Methods that should not be exported
-		if(property_exists($this, 'excluded') && is_array($this->excluded))
-		{
-			return array_merge($excluded, array_values($this->excluded));
-		}
-		return $excluded;
-	}
 
 	/**
 	 * Return the javascript call to an Xajax controller method
@@ -57,114 +51,5 @@ class Controller
 	final public function paginate($currentPage, $itemsPerPage, $itemsTotal, $method, array $parameters = array())
 	{
 		return $this->request->paginate($currentPage, $itemsPerPage, $itemsTotal, $this, $method, $parameters);
-	}
-
-	/**
-	 * Get all the values in a form
-	 * 
-	 * @param string $sFormId the id of the HTML form
-	 * @return array
-	 */
-	protected function lxForm($sFormId)
-	{
-		return $this->request->form($sFormId);
-	}
-
-	/**
-	 * Get the value of an input field
-	 * 
-	 * @param string $sInputId the id of the HTML input element
-	 * @return array
-	 */
-	protected function lxInput($sInputId)
-	{
-		return $this->request->input($sInputId);
-	}
-
-	/**
-	 * Get the value of a checkbox field
-	 * 
-	 * @param string $sInputId the name of the HTML checkbox element
-	 * @return array
-	 */
-	protected function lxCheckbox($sInputId)
-	{
-		return $this->request->checked($sInputId);
-	}
-
-	/**
-	 * Get the value of a select field
-	 * 
-	 * @param string $sInputId the name of the HTML checkbox element
-	 * @return array
-	 */
-	protected function lxSelect($sInputId)
-	{
-		return $this->request->checked($sInputId);
-	}
-
-	/**
-	 * Get the value of a element in the DOM
-	 * 
-	 * @param string $sElementId the id of the HTML element
-	 * @return array
-	 */
-	protected function lxHtml($sElementId)
-	{
-		return $this->request->html($sElementId);
-	}
-
-	/**
-	 * Return a string value
-	 * 
-	 * @param string $sValue the value of the parameter
-	 * @return array
-	 */
-	protected function lxString($sValue)
-	{
-		return $this->request->string($sValue);
-	}
-
-	/**
-	 * Return a numeric value
-	 * 
-	 * @param numeric $nValue the value of the parameter
-	 * @return array
-	 */
-	protected function lxNumeric($nValue)
-	{
-		return $this->request->numeric($nValue);
-	}
-
-	/**
-	 * Return an integer value
-	 * 
-	 * @param numeric $nValue the value of the parameter
-	 * @return array
-	 */
-	protected function lxInteger($nValue)
-	{
-		return $this->request->integer($nValue);
-	}
-
-	/**
-	 * Return a javascript expression
-	 * 
-	 * @param string $sValue the Js code of the parameter
-	 * @return array
-	 */
-	protected function lxJavascript($sValue)
-	{
-		return $this->request->javascript($sValue);
-	}
-
-	/**
-	 * Return a page number
-	 * 
-	 * @return array
-	 */
-	protected function lxPageNumber()
-	{
-		return $this->request->pageNumber();
 	}
 }
