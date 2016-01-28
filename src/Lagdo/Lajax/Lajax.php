@@ -300,7 +300,7 @@ class Lajax
 	}
 
 	/**
-	 * The pre-request processing callback passed to the Xajax library.
+	 * This is the pre-request processing callback passed to the Xajax library.
 	 *
 	 * @param  boolean  &$bEndRequest if set to true, the request processing is interrupted.
 	 * @return object  the Xajax response
@@ -311,6 +311,7 @@ class Lajax
 		$class = $_POST['xjxcls'];
 		$method = $_POST['xjxmthd'];
 		// Todo : check and sanitize $class and $method inputs
+		// Instanciate the controller. This will include the required file.
 		$this->controller = $this->controller($class);
 		if(!$this->controller)
 		{
@@ -335,7 +336,7 @@ class Lajax
 	}
 
 	/**
-	 * The post-request processing callback passed to the Xajax library.
+	 * This is the post-request processing callback passed to the Xajax library.
 	 *
 	 * @return object  the Xajax response
 	 */
@@ -352,7 +353,7 @@ class Lajax
 	/**
 	 * Process the current Xajax request.
 	 *
-	 * @return string  the javascript code
+	 * @return void
 	 */
 	public function processRequest()
 	{
