@@ -1,5 +1,5 @@
 ## lajax
-Xajax integration for the Laravel framework.
+Xajax integration for Laravel 4.2.*.
 
 The Xajax library makes it possible to export PHP classes to Javascript code, so they can be called directly from client side.
 
