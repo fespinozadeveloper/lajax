@@ -61,7 +61,8 @@ return array(
         'extensions' => app_path() . '/ajax/extensions', // Location of the Xajax extensions
         'excluded' => array(), // These methods will not be exported to javascript
     ),
-);```
+);
+```
 
 #### Usage
 
