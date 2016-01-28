@@ -162,12 +162,6 @@ As an example, here's a form for the Calculator class.
         {{ \Form::text('z', '', array('id' => 'z', 'class' => 'form-control', 'value' => '')) }}
     </div>
 </div>
-
-<input type="text" name="x" id="x" value="2" size="3" /> *
-<input type="text" name="y" id="y" value="3" size="3" /> =
-<input type="text" name="z" id="z" value="" size="3" />
-<input type="button" value="Multiply" onclick="XajaxCalculator.multiply($('#x').val(), $('#y').val());return false;" />
-<input type="button" value="Add" onclick="XajaxCalculator.add($('#x').val(), $('#y').val());return false;" />
 ```
 
 And here's the Xajax calls to the methods of the Calculator class.
