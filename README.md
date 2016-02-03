@@ -188,17 +188,93 @@ That's all for a simple example. Now we'll see more advanced features on the pac
 
 #### Advanced usage
 
-##### Controller initialisation
+##### Exception handling
 
-TBD
+The app/start/global.php file contains an error handler for all exceptions in a Laravel application.
+This function needs to be modified to handle errors from Xajax request. 
+
+```
+App::error(function(Exception $exception)
+{
+	Log::error($exception);
+
+	// Process exception thrown from Xajax request
+	if(\Lajax::hasRequest())
+	{
+		$ajaxResponse = \Lajax::response();
+		// ... Print an error message for the application here
+		// Return a Laravel HTTP response
+		return $ajaxResponse->http();
+	}
+});
+```
+
+##### Calling a controller from another one
+
+An Xajax controller can be instanciated anywhere in the application.
+
+```
+$controller = \Lajax::controller('Class');
+```
+
+As a consequence, several Xajax controllers can be used to process a single request.
+
+```
+class A extends \Lagdo\Lajax\Controller
+{
+	public function doA()
+	{
+		// ...
+		return $this->reponse;
+	}
+}
+
+class B extends \Lagdo\Lajax\Controller
+{
+	public function doB()
+	{
+		$a = \Lajax::controller('A');
+		// ...
+		$a->doA();
+		// ...
+		return $this->reponse;
+	}
+}
+```
+
+Since all the Xajax controllers share the same instance of the Xajax response, no extra action is required to concatenate the results together.
+
+##### Controller initialization
+
+An Xajax controller can be initialized either by an init callback, or by an init method.
+
+The init callback is called each time a new Xajax controller object is created, and it takes the controller as parameter.
+```
+\Lajax::setInitCallback(function($controller){
+	// Initialize the controller here
+});
+```
+
+Any init method defined in an Xajax controller class will be called when the class is instanciated, after the init callback. 
 
 ##### Pre- and post-request processing
 
-TBD
+The Lajax library allows the definition of two additional callbacks, which are called before and after the request is actually processed.
 
-##### Exception handling
+```
+\Lajax::setPreCallback(function($controller, $method, &$bEndRequest){
+	// ...
+});
 
-TBD
+\Lajax::setPostCallback(function($controller, $method){
+	// ...
+});
+```
+
+When defined, these callbacks are called only once for each request. 
+
+If the $bEndRequest is set to true in the pre-callback function, the request is not processed further and the Xajax response is returned.
+This feature can be used for example to implement checks on user session and access rights before executing an action.
 
 ##### Pagination
 
@@ -207,8 +283,3 @@ TBD
 ##### Classpath and namespacing
 
 TBD
-
-##### Calling a controller from another one
-
-TBD
-

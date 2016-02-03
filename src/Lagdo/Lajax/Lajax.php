@@ -9,12 +9,13 @@ class Lajax
 	protected $postCallback = null;
 	protected $initCallback = null;
 
+	// Requested controller and method
+	private $controller = null;
+	private $method = null;
 	// Array of registered Xajax controllers, and their requests
 	protected $controllers = array();
 	protected $requests = array();
 	protected $excluded = array();
-	// Requested controller
-	protected $controller = null;
 	// Directory where class files are found
 	protected $controllerDir;
 	// Directory where plugin files are found
@@ -177,10 +178,10 @@ class Lajax
 		}
 		$classpath = '';
 		$classname = $alias;
-		if(($lastDotPos = strrpos($classname, '.')) !== false)
+		if(($lastDotPosition = strrpos($classname, '.')) !== false)
 		{
-			$classpath = substr($classname, 0, $lastDotPos);
-			$classname = substr($classname, $lastDotPos + 1);
+			$classpath = substr($classname, 0, $lastDotPosition);
+			$classname = substr($classname, $lastDotPosition + 1);
 		}
 		// Set the namespace, if defined
 		if(($this->namespace))
@@ -313,6 +314,7 @@ class Lajax
 		// Todo : check and sanitize $class and $method inputs
 		// Instanciate the controller. This will include the required file.
 		$this->controller = $this->controller($class);
+		$this->method = $method;
 		if(!$this->controller)
 		{
 			// End the request processing if a controller cannot be found.
@@ -320,7 +322,7 @@ class Lajax
 			return $this->response;
 		}
 
-		// Set the actual controller class name in the Xajax request plugin,
+		// Set the controller class name in the Xajax request plugin,
 		// so the Xajax library can invoke the right callable object. 
 		$xajaxPluginManager = \xajaxPluginManager::getInstance();
 		$xajaxCallableObjectPlugin = $xajaxPluginManager->getRequestPlugin('xajaxCallableObjectPlugin');
@@ -345,7 +347,7 @@ class Lajax
 		if(($this->postCallback))
 		{
 			$cb = $this->postCallback;
-			$cb($this->controller);
+			$cb($this->controller, $this->method);
 		}
 		return $this->response;
 	}
