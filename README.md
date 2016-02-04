@@ -191,7 +191,7 @@ That's all for a simple example. Now we'll see more advanced features on the pac
 ##### Exception handling
 
 The app/start/global.php file contains an error handler for all exceptions in a Laravel application.
-This function needs to be modified to handle errors from Xajax request. 
+This function needs to be modified as follow to handle exceptions thrown in Xajax requests. 
 
 ```
 App::error(function(Exception $exception)
@@ -211,13 +211,13 @@ App::error(function(Exception $exception)
 
 ##### Calling a controller from another one
 
-An Xajax controller can be instanciated anywhere in the application.
+An Lajax controller can be instanciated anywhere in the application.
 
 ```
 $controller = \Lajax::controller('Class');
 ```
 
-As a consequence, several Xajax controllers can be used to process a single request.
+Thank to this feature, several Lajax controllers can be used to process a single request.
 
 ```
 class A extends \Lagdo\Lajax\Controller
@@ -225,7 +225,7 @@ class A extends \Lagdo\Lajax\Controller
 	public function doA()
 	{
 		// ...
-		return $this->reponse;
+		return $this->response;
 	}
 }
 
@@ -237,25 +237,25 @@ class B extends \Lagdo\Lajax\Controller
 		// ...
 		$a->doA();
 		// ...
-		return $this->reponse;
+		return $this->response;
 	}
 }
 ```
 
-Since all the Xajax controllers share the same instance of the Xajax response, no extra action is required to concatenate the results together.
+Since all the Lajax controllers share the same instance of the Xajax response, no extra action is required to concatenate the results together.
 
 ##### Controller initialization
 
-An Xajax controller can be initialized either by an init callback, or by an init method.
+An Lajax controller can be initialized either by an init callback, or by an init method.
 
-The init callback is called each time a new Xajax controller object is created, and it takes the controller as parameter.
+The init callback is called each time a new Lajax controller object is created, and it takes the controller as parameter.
 ```
 \Lajax::setInitCallback(function($controller){
 	// Initialize the controller here
 });
 ```
 
-Any init method defined in an Xajax controller class will be called when the class is instanciated, after the init callback. 
+Any init method defined in an Lajax controller class will be called when the class is instanciated, after the init callback. 
 
 ##### Pre- and post-request processing
 
@@ -273,13 +273,102 @@ The Lajax library allows the definition of two additional callbacks, which are c
 
 When defined, these callbacks are called only once for each request. 
 
-If the $bEndRequest is set to true in the pre-callback function, the request is not processed further and the Xajax response is returned.
+If the $bEndRequest parameter is set to true in the pre-callback function, the request is not processed further and the Xajax response is returned.
 This feature can be used for example to implement checks on user session and access rights before executing an action.
-
-##### Pagination
-
-TBD
 
 ##### Classpath and namespacing
 
+When processing a request, Lajax automatically loads the corresponding controller file, based on the class name in the Xajax request.
+The class A will be loaded from the A.php in the Lajax controller directory, and exported to javascript as the A class.
+
+Sometimes, a developer may want to organize the Lajax controllers into multi-level subdirectories.
+Lajax provides a mechanism called classpath to cope with this requirement.
+When exporting Lajax controller classes to javascript, the intermediate directories are turned into class hierarchy.
+For example, the class defined in A/B/C.php file in PHP will be exported to A.B.C in javascript.
+
+When using classpath only, Lajax controller class names must still be unique. That is, defining classes B/A.php and C/A.php
+will lead to a PHP duplicate class error.
+In order to be able to define classes with same name in different directories, the Lajax controller classes shall be namespaced.
+
+The namespace needs to be setup in the Lajax config file, and declared accordingly in all Lajax controller classes.
+
+```
+<?php
+return array(
+    'lib' => array(
+        // ...
+    ),
+    'app' => array(
+        'namespace' => 'Xajax', // Namespace of the Lajax controllers
+        // ...
+    ),
+);
+```
+
+In A.php,
+```
+namespace Xajax;
+
+class A extends \Lagdo\Lajax\Controller
+{
+	public function doA()
+	{
+		// ...
+		return $this->response;
+	}
+}
+
+```
+
+In B/A.php,
+```
+namespace Xajax\B;
+
+class A extends \Lagdo\Lajax\Controller
+{
+	public function doA()
+	{
+		// ...
+		return $this->response;
+	}
+}
+
+```
+
+In C/A.php,
+```
+namespace Xajax\C;
+
+class A extends \Lagdo\Lajax\Controller
+{
+	public function doA()
+	{
+		// ...
+		return $this->response;
+	}
+}
+
+```
+ 
+Using namespace do not alter the names of the javascript classes. They are still named with their classpath within the
+Lajax controller directory.
+
+##### Request helpers
+
 TBD
+
+##### Pagination
+
+There are some differences between the pagination in Laravel and Lajax.
+While Laravel generates links to different web pages, Lajax generates calls to different javascript functions.
+Therefore, the pagination function in Laravel needs to be provided with a method of a controller, and its whole set of parameters.
+
+Pagination is setup with a simple call.
+
+```
+\Lajax::paginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, $parameters);
+```
+
+The last parameter is optional and defaults to an empty array.
+The constant XAJAX_PAGE_NUMBER is used to specify the page number in the parameters array.
+If the page number is omitted, Lajax will automatically append it at the end.

@@ -27,7 +27,6 @@ class Controller
 	/**
 	 * Return the javascript call to an Xajax controller method
 	 *
-	 * @param string|object $controller the controller
 	 * @param string $method the name of the method
 	 * @param array $parameters the parameters of the method
 	 * @return string
@@ -43,7 +42,6 @@ class Controller
 	 * @param integer $currentPage the current page
 	 * @param integer $itemsPerPage the number of items per page page
 	 * @param integer $itemsTotal the total number of items
-	 * @param string|object $controller the controller
 	 * @param string $method the name of the method
 	 * @param array $parameters the parameters of the method
 	 * @return object the Laravel paginator instance

@@ -3,6 +3,7 @@
 class Lajax
 {
 	protected $xajax = null;
+	protected $request = null;
 	protected $response = null;
 
 	protected $preCallback = null;
@@ -59,6 +60,20 @@ class Lajax
 	public function hasRequest()
 	{
 		return $this->xajax->canProcessRequest();
+	}
+
+	/**
+	 * Get the Xajax request.
+	 *
+	 * @return object  the Xajax request
+	 */
+	public function request()
+	{
+		if(!$this->request)
+		{
+			$this->request = \App::make('lajax.request');
+		}
+		return $this->request;
 	}
 
 	/**
@@ -261,7 +276,7 @@ class Lajax
 			return;
 		}
 		// Placer les données dans le controleur
-		$controller->request = \App::make('lajax.request');
+		$controller->request = $this->request();
 		$controller->response = $this->response;
 		if(($this->initCallback))
 		{
@@ -367,6 +382,35 @@ class Lajax
 			// Traiter la requete
 			$this->xajax->processRequest();
 		}
+	}
+
+	/**
+	 * Return the javascript call to an Xajax controller method
+	 *
+	 * @param string|object $controller the controller
+	 * @param string $method the name of the method
+	 * @param array $parameters the parameters of the method
+	 * @return string
+	 */
+	public function call($controller, $method, array $parameters = array())
+	{
+		return $this->request()->call($controller, $method, $parameters);
+	}
+
+	/**
+	 * Make the pagination for an Xajax controller method
+	 *
+	 * @param integer $currentPage the current page
+	 * @param integer $itemsPerPage the number of items per page page
+	 * @param integer $itemsTotal the total number of items
+	 * @param string|object $controller the controller
+	 * @param string $method the name of the method
+	 * @param array $parameters the parameters of the method
+	 * @return object the Laravel paginator instance
+	 */
+	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, array $parameters = array())
+	{
+		return $this->request()->paginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, $parameters);
 	}
 }
 
