@@ -11,7 +11,7 @@ For more info about Xajax features, visit the website at http://www.xajax-projec
 
 Install the package with Composer command line.
 ```
-composer require lagdo/xajax
+composer require lagdo/lajax
 ```
 Or add the line below in the composer.json file.
 ```
@@ -73,6 +73,30 @@ They must inherit from the \Lagdo\Lajax\Controller class. Each controller has an
 See here for more info about the xajaxResponse class: http://www.xajax-project.org/en/docs-tutorials/api-docs/xajax-core/xajaxresponse-inc-php/xajaxresponse/.
 
 We will use the Calculator class from the https://github.com/lagdo/lajax-demo package.
+The form below lets the user enter two numbers and choose an operation. The result is then printed in the third input.
+```
+<div class="row">
+    <div class="col-md-2">
+    	<input type="text" name="x" id="x" class="form-control" value="2" />
+    </div>
+    <div class="col-md-2 text-center">
+    	<button class="btn btn-secondary btn-multiply" title="Multiply"> * </button>
+    	<button class="btn btn-secondary btn-add" title="Add"> + </button>
+    	<button class="btn btn-secondary btn-subtract" title="Subtract"> - </button>
+    	<button class="btn btn-secondary btn-divide" title="Divide"> / </button>
+    </div>
+    <div class="col-md-2">
+    	<input type="text" name="y" id="y" class="form-control" value="3" />
+    </div>
+    <div class="col-md-1 text-center"> = </div>
+    <div class="col-md-2">
+    	<input type="text" name="z" id="z" class="form-control" value="" />
+    </div>
+</div>
+```
+
+This is the Lajax controller class.
+It performs the calculation and prints the result back in the form using an Xajax response object.
 
 ```
 class Calculator extends \Lagdo\Lajax\Controller
@@ -102,7 +126,10 @@ class Calculator extends \Lagdo\Lajax\Controller
 }
 ```
 
-In the Laravel controller, we need to define two functions. The first one registers the Xajax classes and prints the page. The second one will process the Xajax requests.
+Now we'll see how to tie the form and the Lajax controller class together.
+
+In the Laravel controller, we'll define two functions.
+The first one registers the Lajax controllers and prints the page, while the second one will process the Ajax requests.
 
 ```
 class HomeController extends Controller
@@ -120,7 +147,7 @@ class HomeController extends Controller
 }
 ```
 
-Now we have to define two routes, one for each function above.
+Now let define two routes, one for each function above.
 
 ```
 Route::get('/', array(
@@ -134,37 +161,14 @@ Route::post(Config::get('lajax::app.route', 'xajax'), array(
 ));
 ```
 
-Include the Javascript in the HTML code of the page.
+After the Lajax controllers are registered, the corresponding javascript code now have to be generated
+and included in the HTML code of the page.
 
 ```
 {{ \Lajax::javascript() }}
 ```
 
-The PHP class is then exported to Javascript, and its methods can be called directly from the page.
-
-As an example, here's a form for the Calculator class.
-```
-<div class="row">
-    <div class="col-md-2">
-        {{ \Form::text('x', '', array('id' => 'x', 'class' => 'form-control', 'value' => '2')) }}
-    </div>
-    <div class="col-md-2 text-center">
-        {{ \Form::button('*', array('class' => 'btn btn-secondary btn-multiply', 'title' => 'Multiply')) }}
-        {{ \Form::button('+', array('class' => 'btn btn-secondary btn-add', 'title' => 'Add')) }}
-        {{ \Form::button('-', array('class' => 'btn btn-secondary btn-subtract', 'title' => 'Subtract')) }}
-        {{ \Form::button('/', array('class' => 'btn btn-secondary btn-divide', 'title' => 'Divide')) }}
-    </div>
-    <div class="col-md-2">
-        {{ \Form::text('y', '', array('id' => 'y', 'class' => 'form-control', 'value' => '3')) }}
-    </div>
-    <div class="col-md-1 text-center"> = </div>
-    <div class="col-md-2">
-        {{ \Form::text('z', '', array('id' => 'z', 'class' => 'form-control', 'value' => '')) }}
-    </div>
-</div>
-```
-
-And here's the Xajax calls to the methods of the Calculator class.
+Finally, here's the Xajax calls to the methods of the Calculator class.
 ```
 <script type="text/javascript">
 $(document).ready(function(){
@@ -191,7 +195,7 @@ That's all for a simple example. Now we'll see more advanced features on the pac
 ##### Exception handling
 
 The app/start/global.php file contains an error handler for all exceptions in a Laravel application.
-This function needs to be modified as follow to handle exceptions thrown in Xajax requests. 
+This function needs to be modified as follow to handle exceptions thrown in Lajax controllers. 
 
 ```
 App::error(function(Exception $exception)
@@ -271,7 +275,7 @@ The Lajax library allows the definition of two additional callbacks, which are c
 });
 ```
 
-When defined, these callbacks are called only once for each request. 
+When they are defined, these callbacks are called only once for each request. 
 
 If the $bEndRequest parameter is set to true in the pre-callback function, the request is not processed further and the Xajax response is returned.
 This feature can be used for example to implement checks on user session and access rights before executing an action.
@@ -355,7 +359,35 @@ Lajax controller directory.
 
 ##### Request helpers
 
-TBD
+Lajax provides a set of helpers to ease the generation of client side calls to controller methods.
+
+```
+<button class="btn btn-secondary" onclick="{{ lxCall('A', 'doA') }}"> Do A </button>
+<button class="btn btn-secondary" onclick="{{ lxCall('B.A', 'doA') }}"> Do A </button>
+<button class="btn btn-secondary" onclick="{{ lxCall('C.A', 'doA') }}"> Do A </button>
+```
+
+These helpers handle calls to Lajax controller methods, as well as their parameters.
+For example, the calls to the Calculator class can be written as follow.
+
+```
+<script type="text/javascript">
+$(document).ready(function(){
+    $('.btn-multiply').click(function(){
+    	{{ lxCall('Calculator', 'multiply', array(lxInput('x'), lxInput('y'))) }};
+    });
+    $('.btn-add').click(function(){
+    	{{ lxCall('Calculator', 'add', array(lxInput('x'), lxInput('y'))) }};
+    });
+    $('.btn-subtract').click(function(){
+    	{{ lxCall('Calculator', 'subtract', array(lxInput('x'), lxInput('y'))) }};
+    });
+    $('.btn-divide').click(function(){
+    	{{ lxCall('Calculator', 'divide', array(lxInput('x'), lxInput('y'))) }};
+    });
+});
+</script>
+```
 
 ##### Pagination
 
@@ -370,5 +402,5 @@ Pagination is setup with a simple call.
 ```
 
 The last parameter is optional and defaults to an empty array.
-The constant XAJAX_PAGE_NUMBER is used to specify the page number in the parameters array.
-If the page number is omitted, Lajax will automatically append it at the end.
+The helper function lxPageNumber() can be used to specify the page number in the parameters array.
+If the page number is omitted, Lajax will automatically append it at the end of the parameters array.
