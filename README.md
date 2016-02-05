@@ -288,7 +288,16 @@ The class A will be loaded from the A.php in the Lajax controller directory, and
 Sometimes, a developer may want to organize the Lajax controllers into multi-level subdirectories.
 Lajax provides a mechanism called classpath to cope with this requirement.
 When exporting Lajax controller classes to javascript, the intermediate directories are turned into class hierarchy.
-For example, the class defined in A/B/C.php file in PHP will be exported to A.B.C in javascript.
+For example, the class defined in A/B/C.php file in PHP will be exported as A.B.C in javascript.
+```
+$('.the-button').click(function(){
+    A.B.C.f();
+});
+```
+It is instanciated in the Laravel application as follow.
+```
+$a = \Lajax::controller('A.B.C');
+```
 
 When using classpath only, Lajax controller class names must still be unique. That is, defining classes B/A.php and C/A.php
 will lead to a PHP duplicate class error.
