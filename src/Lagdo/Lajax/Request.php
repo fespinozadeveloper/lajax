@@ -106,8 +106,8 @@ class Request
 		$paginator = \Paginator::make(array(), $itemsTotal, $itemsPerPage);
 		$presenter = new Pagination\Presenter($paginator, $request);
 		$presenter->setCurrentPage($currentPage);
-		\View::share('presenter', $presenter);
-		\View::share('paginator', $paginator);
+		view()->share('presenter', $presenter);
+		view()->share('paginator', $paginator);
 		return $paginator;
 	}
 

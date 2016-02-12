@@ -18,17 +18,27 @@ class LajaxServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
-		$this->package('lagdo/lajax');
-	
 		// Register the controllers namespace and dir for autoloading
-		if(($namespace = trim(\Config::get('lajax::app.namespace'), '\\')))
+		if(($namespace = trim(config('lajax.app.namespace'), '\\')))
 		{
 			$loader = require base_path() . '/vendor/autoload.php';
-			$loader->setPsr4($namespace . '\\', \Config::get('lajax::app.controllers', app_path() . '/ajax/controllers'));
+			$loader->setPsr4($namespace . '\\', config('lajax.app.controllers', app_path() . '/ajax/controllers'));
 		}
 
+		// Config source and destination files
+		$configSrcFile = __DIR__ . '/../../config/config.php';
+		$configDstFile = config_path('lajax.php');
+		// The assets are actually those of the lagdo/xajax package, and they should be copied to the public directory.
+		$xajaxJsSrcDir = __DIR__ . '/../../../../xajax/xajax_js';
+		$xajaxJsDstDir = config('lajax.lib.javascript_Dir', public_path('/packages/lagdo/xajax/js'));
+		// Publish assets and config
+		$this->publishes([
+			$configSrcFile => $configDstFile,
+			$xajaxJsSrcDir => $xajaxJsDstDir,
+		]);
+
 		// Define the helpers
-		require_once(__DIR__ . '/Facades/helpers.php');
+		require_once(__DIR__ . 'helpers.php');
 	}
 
 	/**
@@ -39,14 +49,14 @@ class LajaxServiceProvider extends ServiceProvider
 	public function register()
 	{
 		// Register the Lajax singleton
-		$this->app['lajax'] = $this->app->share(function($app)
+		$this->app->singleton('Lajax', function ($app)
 		{
 			// Xajax application config
-			$requestRoute = \Config::get('lajax::app.route', 'xajax');
-			$controllerDir = \Config::get('lajax::app.controllers', app_path() . '/ajax/controllers');
-			$extensionDir = \Config::get('lajax::app.extensions', app_path() . '/ajax/extensions');
-			$excluded = \Config::get('lajax::app.excluded', array());
-			$namespace = trim(\Config::get('lajax::app.namespace'), '\\');
+			$requestRoute = config('lajax.app.route', 'xajax');
+			$controllerDir = config('lajax.app.controllers', app_path() . '/ajax/controllers');
+			$extensionDir = config('lajax.app.extensions', app_path() . '/ajax/extensions');
+			$excluded = config('lajax.app.excluded', array());
+			$namespace = trim(config('lajax.app.namespace'), '\\');
 
 			// Create the Xajax object
 			$lajax = new Lajax($requestRoute, $namespace, $controllerDir, $extensionDir, $excluded);
@@ -58,34 +68,20 @@ class LajaxServiceProvider extends ServiceProvider
 			$defaultJsDir = public_path('/packages/lagdo/xajax/js');
 			$defaultJsUrl = asset('/packages/lagdo/xajax/js');
 			// Xajax library config
-			$lajax->configure('wrapperPrefix', \Config::get('lajax::lib.wrapperPrefix', 'Xajax'));
-			$lajax->configure('characterEncoding', \Config::get('lajax::lib.characterEncoding', 'UTF-8'));
-			$lajax->configure('deferScriptGeneration', \Config::get('lajax::lib.deferScriptGeneration', false));
-			$lajax->configure('deferDirectory', \Config::get('lajax::lib.deferDirectory', 'deferred'));
-			$lajax->configure('javascript URI', \Config::get('lajax::lib.javascript_URI', $defaultJsUrl));
-			$lajax->configure('javascript Dir', \Config::get('lajax::lib.javascript_Dir', $defaultJsDir));
-			$lajax->configure('errorHandler', \Config::get('lajax::lib.errorHandler', false));
-			$lajax->configure('debug', \Config::get('lajax::lib.debug', false));
+			$lajax->configure('wrapperPrefix', config('lajax.lib.wrapperPrefix', 'Xajax'));
+			$lajax->configure('characterEncoding', config('lajax.lib.characterEncoding', 'UTF-8'));
+			$lajax->configure('deferScriptGeneration', config('lajax.lib.deferScriptGeneration', false));
+			$lajax->configure('deferDirectory', config('lajax.lib.deferDirectory', 'deferred'));
+			$lajax->configure('javascript URI', config('lajax.lib.javascript_URI', $defaultJsUrl));
+			$lajax->configure('javascript Dir', config('lajax.lib.javascript_Dir', $defaultJsDir));
+			$lajax->configure('errorHandler', config('lajax.lib.errorHandler', false));
+			$lajax->configure('debug', config('lajax.lib.debug', false));
 
 			return $lajax;
 		});
 
-		// Register the Lajax commands
-		$this->app['lajax::commands.config'] = $this->app->share(function($app)
-		{
-			return new Console\PublishConfig;
-		});
-		$this->app['lajax::commands.assets'] = $this->app->share(function($app)
-		{
-			return new Console\PublishAssets;
-		});
-		$this->commands(
-			'lajax::commands.config',
-			'lajax::commands.assets'
-		);
-
 		// Register the Lajax Request singleton
-		$this->app['lajax.request'] = $this->app->share(function($app)
+		$this->app->bind('lajax.request', function()
 		{
 			// Create the Xajax Request object
 			$request = new Request();
