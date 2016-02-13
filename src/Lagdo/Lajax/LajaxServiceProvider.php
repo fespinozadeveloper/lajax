@@ -24,7 +24,7 @@ class LajaxServiceProvider extends ServiceProvider
 		if(($namespace = trim(\Config::get('lajax::app.namespace'), '\\')))
 		{
 			$loader = require base_path() . '/vendor/autoload.php';
-			$loader->setPsr4($namespace . '\\', \Config::get('lajax::app.controllers', app_path() . '/ajax/controllers'));
+			$loader->setPsr4($namespace . '\\', \Config::get('lajax::app.controllers', app_path() . '/Ajax/Controllers'));
 		}
 
 		// Define the helpers
@@ -43,8 +43,8 @@ class LajaxServiceProvider extends ServiceProvider
 		{
 			// Xajax application config
 			$requestRoute = \Config::get('lajax::app.route', 'xajax');
-			$controllerDir = \Config::get('lajax::app.controllers', app_path() . '/ajax/controllers');
-			$extensionDir = \Config::get('lajax::app.extensions', app_path() . '/ajax/extensions');
+			$controllerDir = \Config::get('lajax::app.controllers', app_path() . '/Ajax/Controllers');
+			$extensionDir = \Config::get('lajax::app.extensions', app_path() . '/Ajax/Extensions');
 			$excluded = \Config::get('lajax::app.excluded', array());
 			$namespace = trim(\Config::get('lajax::app.namespace'), '\\');
 
