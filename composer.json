@@ -13,11 +13,11 @@
     "require": {
         "php": ">=5.5.9",
         "lagdo/xajax": "dev-master",
-		"illuminate/support": "5.*"
+        "illuminate/support": "5.*"
     },
     "autoload": {
         "psr-4": {
-            "Lagdo\\Lajax\\": "packages/lagdo/lajax/src/Lagdo/Lajax/"
+            "Lagdo\\Lajax\\": "src/Lagdo/Lajax/"
         }
     }
 }

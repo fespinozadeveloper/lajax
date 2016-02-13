@@ -1,34 +1,48 @@
 <?php namespace Lagdo\Lajax\Pagination;
 
-class Presenter extends \Illuminate\Pagination\Presenter
+use Illuminate\Pagination\LengthAwarePaginator as Paginator;
+use Illuminate\Pagination\BootstrapThreeNextPreviousButtonRendererTrait;
+use Illuminate\Pagination\BootstrapThreePresenter;
+use Illuminate\Pagination\UrlWindowPresenterTrait;
+
+class Presenter extends BootstrapThreePresenter
 {
+    use BootstrapThreeNextPreviousButtonRendererTrait, UrlWindowPresenterTrait;
+
+	/**
+	 * The xajax request.
+	 *
+	 * @var \Lagdo\Lajax\Request
+	 */
 	protected $xajaxRequest = '';
 
 	/**
 	 * Create a new Presenter instance.
 	 *
-	 * @param  \Illuminate\Pagination\Paginator  $paginator
+	 * @param  \Illuminate\Pagination\LengthAwarePaginator  $paginator
+	 * @param  \Lagdo\Lajax\Request						 $xajaxRequest
 	 * @return void
 	 */
-	public function __construct(\Illuminate\Pagination\Paginator $paginator, $xajaxRequest)
+	public function __construct(Paginator $paginator, $xajaxRequest)
 	{
 		parent::__construct($paginator);
 		$this->xajaxRequest = $xajaxRequest;
 	}
 
 	/**
-	 * Get HTML wrapper for a page link.
+	 * Get HTML wrapper for an available page link.
 	 *
 	 * @param  string  $url
 	 * @param  int  $page
+	 * @param  string|null  $rel
 	 * @return string
 	 */
-	public function getPageLinkWrapper($url, $page, $rel = null)
+	public function getAvailablePageWrapper($url, $page, $rel = null)
 	{
 		if($page == '&laquo;') // Prev page
-			$number = $this->currentPage - 1;
+			$number = $this->paginator->currentPage() - 1;
 		else if($page == '&raquo;') // Next page
-			$number = $this->currentPage + 1;
+			$number = $this->paginator->currentPage() + 1;
 		else
 			$number = $page;
 		return '<li><a href="javascript:;" onclick="' .

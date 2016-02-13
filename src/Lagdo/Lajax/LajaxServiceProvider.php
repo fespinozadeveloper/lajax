@@ -22,7 +22,7 @@ class LajaxServiceProvider extends ServiceProvider
 		if(($namespace = trim(config('lajax.app.namespace'), '\\')))
 		{
 			$loader = require base_path() . '/vendor/autoload.php';
-			$loader->setPsr4($namespace . '\\', config('lajax.app.controllers', app_path() . '/ajax/controllers'));
+			$loader->setPsr4($namespace . '\\', config('lajax.app.controllers', app_path() . '/Ajax/Controllers'));
 		}
 
 		// Config source and destination files
@@ -38,7 +38,7 @@ class LajaxServiceProvider extends ServiceProvider
 		]);
 
 		// Define the helpers
-		require_once(__DIR__ . 'helpers.php');
+		require_once(__DIR__ . '/Facades/helpers.php');
 	}
 
 	/**
@@ -49,12 +49,12 @@ class LajaxServiceProvider extends ServiceProvider
 	public function register()
 	{
 		// Register the Lajax singleton
-		$this->app->singleton('Lajax', function ($app)
+		$this->app->singleton('lajax', function ($app)
 		{
 			// Xajax application config
 			$requestRoute = config('lajax.app.route', 'xajax');
-			$controllerDir = config('lajax.app.controllers', app_path() . '/ajax/controllers');
-			$extensionDir = config('lajax.app.extensions', app_path() . '/ajax/extensions');
+			$controllerDir = config('lajax.app.controllers', app_path() . '/Ajax/Controllers');
+			$extensionDir = config('lajax.app.extensions', app_path() . '/Ajax/Extensions');
 			$excluded = config('lajax.app.excluded', array());
 			$namespace = trim(config('lajax.app.namespace'), '\\');
 
@@ -81,7 +81,7 @@ class LajaxServiceProvider extends ServiceProvider
 		});
 
 		// Register the Lajax Request singleton
-		$this->app->bind('lajax.request', function()
+		$this->app->singleton('lajax.request', function()
 		{
 			// Create the Xajax Request object
 			$request = new Request();

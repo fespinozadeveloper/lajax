@@ -1,5 +1,5 @@
 ## lajax
-Xajax integration for Laravel 4.2.*.
+Xajax integration for Laravel 4.2 and 5.
 
 The Xajax library makes it possible to export PHP classes to Javascript code, so they can be called directly from client side.
 
@@ -9,21 +9,47 @@ For more info about Xajax features, visit the website at http://www.xajax-projec
 
 #### Installation
 
-Install the package with Composer command line.
+The package installs with Composer.
+
+##### For Laravel 5
+
+Add `lagdo/lajax` to the `composer.json` file.
 ```
-composer require lagdo/lajax
-```
-Or add the line below in the composer.json file.
-```
-"lagdo/lajax": "dev-master"
+"lagdo/lajax": "0.2.*"
 ```
 
-Publish the package config and assets.
+Run Composer to update the package to the latest version, and then publish the config and assets.
 ```
+composer update
+php artisan vendor:publish
+```
+
+In config/app.php, register the service provider and the facade.
+```
+'providers' => array(
+  Lagdo\Lajax\LajaxServiceProvider::class,
+);
+```
+
+```
+'aliases' => array(
+  'Lajax'  => Lagdo\Lajax\Facades\Lajax::class,
+);
+```
+
+##### For Laravel 4.2
+
+Update the composer.json file.
+```
+"lagdo/lajax": "0.1.*"
+```
+
+Run Composer to update the package to the latest version, and then publish the config and assets.
+```
+composer update
 php artisan lajax:config
 php artisan lajax:assets
 ```
-Note: The published assets are actually those of the lagdo/xajax package.
 
 In config/app.php, register the service provider and the facade.
 ```
@@ -40,7 +66,18 @@ In config/app.php, register the service provider and the facade.
 
 #### Configuration
 
-After the config is published, you will see the config file in app/config/packages/lagdo/lajax/config.php.
+The Lajax config file can be updated with application specific settings.
+
+For Laravel 5, the config file is located at
+```
+config/lajax.php
+```
+
+And for Laravel 4.2,
+```
+config/packages/lagdo/lajax/config.php
+```
+
 The settings of the Xajax library are under the 'lib' key, and the Laravel application are under the 'app' key.
 ```
 <?php
@@ -55,10 +92,10 @@ return array(
         'debug' => false,
     ),
     'app' => array(
-        'route' => 'xajax', // Route for the Xajax post request
-        'namespace' => '', // Namespace of the Lajax controllers
-        'controllers' => app_path() . '/ajax/controllers, // Location of the Lajax controllers
-        'extensions' => app_path() . '/ajax/extensions', // Location of the Xajax extensions
+        'route' => 'xajax',    // Route for the Xajax post request
+        'namespace' => '',     // Namespace of the Lajax controllers
+        'controllers' => '',   // Location of the Lajax controllers, defaults to app_path('/Ajax/Controllers)
+        'extensions' => '',    // Location of the Xajax extensions, defaults to app_path('/Ajax/Extensions')
         'excluded' => array(), // These methods will not be exported to javascript
     ),
 );
@@ -68,7 +105,8 @@ return array(
 
 ##### A simple example
 
-The classes to be exported in Javascript code must be located in the app/ajax/controllers/ directory.
+By default, the classes to be exported in Javascript code must be located in the app/Ajax/Controllers/ directory.
+
 They must inherit from the \Lagdo\Lajax\Controller class. Each controller has an Xajax response attribute, which is used to send commands back to the browser in response to a xajax request.
 See here for more info about the xajaxResponse class: http://www.xajax-project.org/en/docs-tutorials/api-docs/xajax-core/xajaxresponse-inc-php/xajaxresponse/.
 

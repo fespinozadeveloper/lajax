@@ -2,6 +2,8 @@
 
 namespace Lagdo\Lajax;
 
+use Illuminate\Pagination\LengthAwarePaginator as Paginator;
+
 class Request
 {
 	protected $lajax = null;
@@ -102,11 +104,13 @@ class Request
 		{
 			$request->addParameter(XAJAX_PAGE_NUMBER, 0);
 		}
-	
-		$paginator = \Paginator::make(array(), $itemsTotal, $itemsPerPage);
-		$presenter = new Pagination\Presenter($paginator, $request);
-		$presenter->setCurrentPage($currentPage);
-		view()->share('presenter', $presenter);
+
+		$paginator = new Paginator(array(), $itemsTotal, $itemsPerPage, $currentPage);
+		// Set the Laravel paginator to use our presenter 
+		Paginator::presenter(function($paginator) use ($request)
+		{
+			return new Pagination\Presenter($paginator, $request);
+		});
 		view()->share('paginator', $paginator);
 		return $paginator;
 	}
