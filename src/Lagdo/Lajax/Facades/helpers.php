@@ -16,17 +16,17 @@ function lxCall($controller, $method, array $parameters = array())
 /**
  * Make the pagination for an Xajax controller method
  *
- * @param integer $currentPage the current page
- * @param integer $itemsPerPage the number of items per page page
  * @param integer $itemsTotal the total number of items
+ * @param integer $itemsPerPage the number of items per page page
+ * @param integer $currentPage the current page
  * @param string|object $controller the controller
  * @param string $method the name of the method
  * @param array $parameters the parameters of the method
  * @return object the Laravel paginator instance
  */
-function lxPaginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, array $parameters = array())
+function lxPaginator($itemsTotal, $itemsPerPage, $currentPage, $controller, $method, array $parameters = array())
 {
-	return \App::make('lajax.request')->paginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, $parameters);
+	return \App::make('lajax.request')->paginator($itemsTotal, $itemsPerPage, $currentPage, $controller, $method, $parameters);
 }
 
 /**

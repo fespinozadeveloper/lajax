@@ -108,11 +108,10 @@ class Request
 			$request->addParameter(XAJAX_PAGE_NUMBER, 0);
 		}
 
-		// Create the presenter and share with the paginator in the views
+		// Create the presenter and share in the views
 		$presenter = new Pagination\Presenter($paginator, $request);
 		$presenter->setCurrentPage($currentPage);
 		\View::share('presenter', $presenter);
-		\View::share('paginator', $paginator);
 		return $paginator;
 	}
 
