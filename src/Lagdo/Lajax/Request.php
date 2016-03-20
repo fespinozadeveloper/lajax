@@ -2,6 +2,8 @@
 
 namespace Lagdo\Lajax;
 
+use Paginator;
+
 class Request
 {
 	protected $lajax = null;
@@ -71,22 +73,25 @@ class Request
 	}
 	
 	/**
-	 * Make the pagination for an Xajax controller method
+	 * Set an Xajax presenter on a Laravel paginator
 	 *
+	 * @param object $paginator the Laravel paginator
 	 * @param integer $currentPage the current page
-	 * @param integer $itemsPerPage the number of items per page page
-	 * @param integer $itemsTotal the total number of items
 	 * @param string|object $controller the controller
 	 * @param string $method the name of the method
 	 * @param array $parameters the parameters of the method
 	 * @return object the Laravel paginator instance
 	 */
-	public function paginate($currentPage, $itemsPerPage, $itemsTotal, $controller, $method, array $parameters = array())
+	public function setPresenter($paginator, $currentPage, $controller, $method, array $parameters = array())
 	{
 		if(is_string($controller))
+		{
 			$controller = $this->lajax->controller($controller);
+		}
 		if(!is_object($controller))
-			return '';
+		{
+			return null;
+		}
 		// The Xajax library turns the method names into lower case chars.
 		$method = strtolower($method);
 		// Check if the xajax method exists
@@ -102,13 +107,30 @@ class Request
 		{
 			$request->addParameter(XAJAX_PAGE_NUMBER, 0);
 		}
-	
-		$paginator = \Paginator::make(array(), $itemsTotal, $itemsPerPage);
+
+		// Create the presenter and share with the paginator in the views
 		$presenter = new Pagination\Presenter($paginator, $request);
 		$presenter->setCurrentPage($currentPage);
 		\View::share('presenter', $presenter);
 		\View::share('paginator', $paginator);
 		return $paginator;
+	}
+
+	/**
+	 * Make the pagination for an Xajax controller method
+	 *
+	 * @param integer $itemsTotal the total number of items
+	 * @param integer $itemsPerPage the number of items per page page
+	 * @param integer $currentPage the current page
+	 * @param string|object $controller the controller
+	 * @param string $method the name of the method
+	 * @param array $parameters the parameters of the method
+	 * @return object the Laravel paginator instance
+	 */
+	public function paginator($itemsTotal, $itemsPerPage, $currentPage, $controller, $method, array $parameters = array())
+	{
+		$paginator = \Paginator::make(array(), $itemsTotal, $itemsPerPage);
+		return $this->setPresenter($paginator, $currentPage, $controller, $method, $parameters);
 	}
 
 	/**
