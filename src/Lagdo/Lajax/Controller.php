@@ -54,13 +54,13 @@ class Controller
 	 *
 	 * @param integer $itemsTotal the total number of items
 	 * @param integer $itemsPerPage the number of items per page page
-	 * @param integer $page the current page
+	 * @param integer $currentPage the current page
 	 * @param string $method the name of the method
 	 * @param array $parameters the parameters of the method
 	 * @return object the Laravel paginator instance
 	 */
-	final public function paginator($itemsTotal, $itemsPerPage, $page, $method, array $parameters = array())
+	final public function paginator($itemsTotal, $itemsPerPage, $currentPage, $method, array $parameters = array())
 	{
-		return $this->request->paginator($itemsTotal, $itemsPerPage, $page, $this, $method, $parameters);
+		return $this->request->paginator($itemsTotal, $itemsPerPage, $currentPage, $this, $method, $parameters);
 	}
 }
