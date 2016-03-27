@@ -2,3 +2,7 @@
 .env.*.php
 .env.php
 .env
+# Do not commit Eclipse files
+.project
+.settings/*
+.buildpath
